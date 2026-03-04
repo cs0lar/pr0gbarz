@@ -35,6 +35,6 @@
     "point-of-view": "^5.2.0",
     "progressbar.js": "^1.1.1",
     "sqlite3": "^5.1.5",
-    "underscore": "^1.13.3"
+    "underscore": "^1.13.8"
   }
 }
