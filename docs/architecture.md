@@ -13,12 +13,12 @@ Browser
    |
 Fastify (API + static host)
    |
-Domain services and repositories
+Domain services and typed repositories
    |
-SQLite
+SQLite through Drizzle and Node built-in SQLite
 ```
 
-The database layer is scheduled for roadmap phase 2 and the typed product API for phase 3.
+The database layer is implemented in roadmap phase 2. The typed product API remains scheduled for phase 3.
 
 ## Package responsibilities
 
@@ -27,7 +27,7 @@ The database layer is scheduled for roadmap phase 2 and the typed product API fo
 - Creates and configures Fastify.
 - Owns process startup, environment validation, logging, and shutdown.
 - Hosts API routes and built frontend assets.
-- Depends on contracts and database packages once those implementations exist.
+- Depends on the database package and will use shared contracts once the typed API exists.
 
 The application factory is separate from `server.ts` so tests can exercise Fastify without opening a network socket.
 
@@ -44,7 +44,7 @@ The application factory is separate from `server.ts` so tests can exercise Fasti
 
 ### `packages/database`
 
-- Will own the fresh v2 schema, migrations, connection lifecycle, and repositories.
+- Owns the fresh v2 schema, migrations, connection lifecycle, and repositories.
 - Must not expose raw rows as public API contracts.
 - Must not recognize or modify v1 databases.
 
@@ -70,13 +70,13 @@ Avoid imports between `apps/web` and `apps/api`. Avoid circular workspace depend
 
 Runtime environment access is isolated in `apps/api/src/config.ts`. Code outside the composition root should receive typed configuration rather than reading `process.env` directly.
 
-Database configuration will be added in phase 2. The server must then positively identify a database as v2 before applying any migration after the initial schema.
+`DATABASE_PATH` selects the SQLite file. A nonexistent path is eligible for first-time creation. Every existing path is opened read-only and must contain the v2 product and major-version marker before it is reopened for migrations. See [Database architecture](database.md).
 
 ## Testing strategy
 
 - Unit tests cover configuration, calculations, and domain rules.
 - Fastify injection tests cover API behaviour without network sockets.
-- Repository integration tests will use isolated temporary v2 databases.
+- Repository integration tests use isolated temporary v2 databases.
 - Component tests will cover meaningful interactive states.
 - Playwright will cover critical end-to-end journeys when product workflows arrive.
 

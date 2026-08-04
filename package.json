@@ -16,7 +16,8 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
-    "dev": "concurrently --kill-others-on-fail --names api,web --prefix-colors blue,magenta \"npm run dev --workspace @pr0gbarz/api\" \"npm run dev --workspace @pr0gbarz/web\"",
+    "predev": "npm run build --workspace @pr0gbarz/database",
+    "dev": "concurrently --kill-others-on-fail --names database,api,web --prefix-colors yellow,blue,magenta \"npm run dev --workspace @pr0gbarz/database\" \"npm run dev --workspace @pr0gbarz/api\" \"npm run dev --workspace @pr0gbarz/web\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings 0",
@@ -46,6 +47,7 @@
     "vitest": "^4.1.10"
   },
   "allowScripts": {
-    "esbuild@0.28.1": true
+    "esbuild@0.28.1": true,
+    "esbuild@0.25.12": true
   }
 }

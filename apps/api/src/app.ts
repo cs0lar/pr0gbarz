@@ -1,10 +1,12 @@
 import fastifyStatic from '@fastify/static'
+import type { DatabaseConnection } from '@pr0gbarz/database'
 import Fastify, { type FastifyInstance } from 'fastify'
 import { access } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export interface BuildAppOptions {
+  database?: DatabaseConnection
   logger?: boolean
   staticRoot?: false | string
 }
@@ -26,6 +28,12 @@ export async function buildApp(
   options: BuildAppOptions = {},
 ): Promise<FastifyInstance> {
   const app = Fastify({ logger: options.logger ?? false })
+
+  if (options.database) {
+    app.addHook('onClose', () => {
+      options.database?.close()
+    })
+  }
 
   app.get('/api/status', () => ({
     name: 'pr0gbarz',
