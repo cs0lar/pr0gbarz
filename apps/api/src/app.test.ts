@@ -21,17 +21,26 @@ afterEach(async () => {
 })
 
 describe('buildApp', () => {
-  it('exposes a minimal status endpoint', async () => {
+  it('exposes process health without requiring a database', async () => {
     const app = await buildApp({ staticRoot: false })
     openApps.push(app)
 
-    const response = await app.inject({ method: 'GET', url: '/api/status' })
+    const response = await app.inject({ method: 'GET', url: '/health' })
 
     expect(response.statusCode).toBe(200)
+    expect(response.json()).toEqual({ status: 'ok' })
+  })
+
+  it('reports not-ready without a database', async () => {
+    const app = await buildApp({ staticRoot: false })
+    openApps.push(app)
+
+    const response = await app.inject({ method: 'GET', url: '/ready' })
+
+    expect(response.statusCode).toBe(503)
     expect(response.json()).toEqual({
-      name: 'pr0gbarz',
-      status: 'ok',
-      version: 2,
+      code: 'NOT_READY',
+      message: 'The database is not ready.',
     })
   })
 
