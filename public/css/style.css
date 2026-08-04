@@ -2,12 +2,12 @@ body {
 	user-select: none;
 }
 
-pre.progbarz-title {
+pre.pr0gbarz-title {
 	border-left-color: transparent;
 	background: transparent;
   margin-bottom: -80px;
 }	
-pre.progbarz-title code {
+pre.pr0gbarz-title code {
 	background: transparent;
 	display: flex;
 	justify-content: center;

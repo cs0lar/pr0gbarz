@@ -1,45 +1,77 @@
-# ProGBarZ
-Create task lists with associated progress bars.
+# pr0gbarz 2.0
 
-<div align="center">
-    <img src="https://github.com/cs0lar/ProGBarZ/raw/master/screenshot.png" width="800" height="auto"/>
-</div>
+pr0gbarz is being rebuilt as a focused, self-hosted project and progress tracker. The v2 application uses a React web interface, a Fastify API, and—beginning in roadmap phase 2—a fresh SQLite database.
 
-# Getting Started
-1. `npm install`
-2. Create an `.env` file (see `.env.example`) and specify where ProGBarZ should create the database data file (e.g. `~/.progbarz`)
-3. `npm start`
+The current branch contains the phase 1 foundation. It intentionally presents a minimal shell rather than product workflows.
 
-# Dependencies
-ProGBarZ relies on the following frameworks:
-1. The [fastify](https://www.fastify.io/) web framework for Node.js
-2. The [liquidjs](https://liquidjs.com/) templating engine
-3. The [progressbar.js](https://kimmobrunfeldt.github.io/progressbar.js/) library for shaped progress bars
-4. The [node-sqlite3](https://github.com/mapbox/node-sqlite3) client library to interact with the SQLite persistence engine
-5. The [sparkline](https://github.com/fnando/sparkline) library to draw the  progress rate graph for each task
+## Requirements
 
-# Migrations
-ProGBarZ supports a very simple strategy for database migrations via the command:
+- Node.js 24 LTS
+- npm 11
+
+Use the version in `.nvmrc` when working with a Node version manager.
+
+## Setup
 
 ```sh
-npm run migrate -- --db=<database>
+npm install
+cp .env.example .env
+npm run dev
 ```
-where `<database>` is the absolute path to the target SQLite database file.
 
-When invoked, the command will process in ascending sequence all the files in the `sql` directory that match the pattern `migration_<four digits>.sql`, e.g. `migration_0012.sql`, starting from `migration_0000.sql`.
+The web development server runs at `http://127.0.0.1:5173` and proxies `/api` requests to Fastify at `http://127.0.0.1:8080`.
 
-Specifying the optional parameter `--start=<number>` to the `migrate` command will begin migration from the file `migration_<number>.sql`.
-## Example
-Run all migrations found in the project's `sql` directory starting from `migration_0012.sql` where the target database is in `/opt/mydb.sqlite`:
+## Production build
 
 ```sh
-npm run migrate -- --db=/opt/mydb.sqlite --start=12
+npm run build
+NODE_ENV=production npm start
 ```
-# UI
-## Project overall progress
-When creating a new project from the sidenav bar you are prompted twice for input: the first prompt asks for the project's name, the second for the duration, in days, of the project if known - it may be left blank. If a duration in days is specified, ProGBarZ will track the number of days elapsed since creation of the project and displays this as a percentage relative to project duration as a semicircle progress bar above the task list.
 
-## Sparklines
-Sparklines next to each task highlight the progress rate for each task. Large spikes denote that large chunks of progress were logged in a relatively short amount of time - the higher the value, the faster you are progressing through your task.
+Fastify serves the compiled web application at `http://127.0.0.1:8080` by default. Set `HOST=0.0.0.0` to listen outside the local machine.
 
+## Configuration
 
+| Variable   | Default       | Description                                   |
+| ---------- | ------------- | --------------------------------------------- |
+| `NODE_ENV` | `development` | One of `development`, `test`, or `production` |
+| `HOST`     | `127.0.0.1`   | Fastify listen address                        |
+| `PORT`     | `8080`        | Fastify port from 1 through 65535             |
+
+Configuration is validated before the server starts. Invalid values produce actionable startup errors.
+
+## Quality commands
+
+```sh
+npm run format:check
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run verify
+```
+
+`npm run verify` runs the complete local CI-equivalent sequence.
+
+## Workspace
+
+```text
+apps/api             Fastify application and production host
+apps/web             React/Vite browser application
+packages/contracts   Shared API contracts (phase 3)
+packages/database    SQLite schema and repositories (phase 2)
+packages/ui          Reusable UI primitives (phase 4)
+tests/fixtures       Cross-package test fixtures
+```
+
+See [Architecture](docs/architecture.md) for package boundaries and [AGENTS.md](AGENTS.md) for the implementation roadmap.
+
+## Version 1 data
+
+Version 2 is a clean break. It will not open, modify, or automatically migrate a v1 database. Configure v2 with a new database file once persistence is introduced in phase 2.
+
+The old source remains in the repository temporarily for historical reference, but it is disconnected from v2 scripts and will be removed in the release-hardening phase.
+
+## License
+
+GPL-3.0-or-later. See [LICENSE](LICENSE).

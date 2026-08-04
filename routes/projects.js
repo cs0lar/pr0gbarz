@@ -8,7 +8,7 @@ async function routes( fastify, options ) {
 	fastify.get( '/:projectId', async ( request, reply ) => {
 		
 		// prep title
-		const title = await text( 'ProGBarZ', { font: 'Lean' } )
+		const title = await text( 'pr0gbarz', { font: 'Lean' } )
 		// prep tasks list
 		let tasks = []
 		let projects = []
@@ -49,7 +49,7 @@ async function routes( fastify, options ) {
 			fastify.log.error( err ) 
 		}
 		finally {
-			reply.view( 'progbarz.liquid', { 
+			reply.view( 'pr0gbarz.liquid', {
 				projects: projects, 
 				tasks: tasks, 
 				title: title, 

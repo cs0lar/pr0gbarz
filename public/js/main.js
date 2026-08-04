@@ -1,4 +1,4 @@
-class ProGBarZ {
+class Pr0gBarz {
 	constructor() {
 		this.barz = {}
 		this.init()
@@ -332,4 +332,4 @@ class ProGBarZ {
 	}
 }
 
-const PgbZ = new ProGBarZ()
+const Pr0gBarzApp = new Pr0gBarz()

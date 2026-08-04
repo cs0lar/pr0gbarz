@@ -1,4 +1,17 @@
 .cache/
 node_modules/
 .env
+.env.*
+!.env.example
 *.log
+*.tsbuildinfo
+coverage/
+dist/
+playwright-report/
+test-results/
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.backup
