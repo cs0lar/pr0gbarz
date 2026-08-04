@@ -2,7 +2,7 @@
 
 pr0gbarz is being rebuilt as a focused, self-hosted project and progress tracker. The v2 application uses a React web interface, a Fastify API, and a fresh SQLite database.
 
-The current branch contains the phase 3 typed API foundation. It intentionally presents a minimal web shell while the product interface is rebuilt around the new API.
+The current branch contains the phase 4 design system and application shell. The responsive interface foundation is complete; project workflows arrive in phase 5.
 
 ## Requirements
 
@@ -58,9 +58,10 @@ npm run typecheck
 npm test
 npm run build
 npm run verify
+npm run test:visual --workspace @pr0gbarz/web
 ```
 
-`npm run verify` runs the complete local CI-equivalent sequence.
+`npm run verify` runs the fast local CI-equivalent sequence. The Playwright command separately checks the committed desktop/mobile and light/dark screenshots; install its browser once with `npx playwright install chromium`.
 
 ## Workspace
 
@@ -69,11 +70,11 @@ apps/api             Fastify application and production host
 apps/web             React/Vite browser application
 packages/contracts   Shared TypeBox API contracts
 packages/database    SQLite schema and typed repositories
-packages/ui          Reusable UI primitives (phase 4)
+packages/ui          Reusable UI primitives and design tokens
 tests/fixtures       Cross-package test fixtures
 ```
 
-See [Architecture](docs/architecture.md) for package boundaries and [AGENTS.md](AGENTS.md) for the implementation roadmap.
+See [Architecture](docs/architecture.md) for package boundaries, [Interface system](docs/interface.md) for frontend conventions, and [AGENTS.md](AGENTS.md) for the implementation roadmap.
 
 ## Database development
 

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { App } from './App.js'
+import '@pr0gbarz/ui/styles.css'
 import './styles.css'
 
 const root = document.querySelector<HTMLElement>('#root')

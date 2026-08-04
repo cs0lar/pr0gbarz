@@ -11,12 +11,22 @@ export default defineConfig({
         './packages/contracts/src/index.ts',
       ),
       '@pr0gbarz/database': workspaceSource('./packages/database/src/index.ts'),
+      '@pr0gbarz/ui': workspaceSource('./packages/ui/src/index.tsx'),
     },
   },
   test: {
     coverage: {
       reporter: ['text', 'html'],
     },
-    include: ['apps/**/*.test.ts', 'packages/**/*.test.ts'],
+    include: [
+      'apps/**/*.test.ts',
+      'apps/**/*.test.tsx',
+      'packages/**/*.test.ts',
+      'packages/**/*.test.tsx',
+    ],
+    environmentOptions: {
+      jsdom: { url: 'http://localhost/' },
+    },
+    setupFiles: ['./tests/setup.ts'],
   },
 })
