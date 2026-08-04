@@ -1,0 +1,403 @@
+import { afterEach, describe, expect, it } from 'vitest'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+
+import { openDatabase } from '@pr0gbarz/database'
+
+import { buildApp } from './app.js'
+
+type TestApp = Awaited<ReturnType<typeof buildApp>>
+
+const apps: TestApp[] = []
+const temporaryDirectories: string[] = []
+const fixedNow = new Date('2026-08-04T12:00:00.000Z')
+
+afterEach(async () => {
+  await Promise.all(apps.splice(0).map((app) => app.close()))
+  await Promise.all(
+    temporaryDirectories
+      .splice(0)
+      .map((directory) => rm(directory, { force: true, recursive: true })),
+  )
+})
+
+async function createTestApp(): Promise<TestApp> {
+  const directory = await mkdtemp(path.join(tmpdir(), 'pr0gbarz-api-'))
+  temporaryDirectories.push(directory)
+  const database = await openDatabase({
+    databasePath: path.join(directory, 'test.sqlite'),
+  })
+  const app = await buildApp({
+    database,
+    now: () => new Date(fixedNow),
+    staticRoot: false,
+  })
+  apps.push(app)
+  return app
+}
+
+async function createProject(app: TestApp, name = 'Launch') {
+  const response = await app.inject({
+    method: 'POST',
+    payload: { name },
+    url: '/api/v1/projects',
+  })
+  expect(response.statusCode).toBe(201)
+  return response.json<{ id: number }>()
+}
+
+async function createTask(
+  app: TestApp,
+  projectId: number,
+  payload: Record<string, unknown> = { name: 'Ship API' },
+) {
+  const response = await app.inject({
+    method: 'POST',
+    payload,
+    url: `/api/v1/projects/${projectId}/tasks`,
+  })
+  expect(response.statusCode).toBe(201)
+  return response.json<{ id: number }>()
+}
+
+describe('system API', () => {
+  it('reports database readiness', async () => {
+    const app = await createTestApp()
+
+    const response = await app.inject({ method: 'GET', url: '/ready' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toEqual({ database: 'ready', status: 'ok' })
+  })
+
+  it('returns a consistent not-found envelope', async () => {
+    const app = await createTestApp()
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/not-a-resource',
+    })
+
+    expect(response.statusCode).toBe(404)
+    expect(response.json()).toEqual({
+      code: 'NOT_FOUND',
+      message: 'The requested resource was not found.',
+    })
+  })
+})
+
+describe('project API', () => {
+  it('validates input before it reaches persistence', async () => {
+    const app = await createTestApp()
+
+    const invalid = await app.inject({
+      method: 'POST',
+      payload: { name: '   ', unexpected: true },
+      url: '/api/v1/projects',
+    })
+    const list = await app.inject({ method: 'GET', url: '/api/v1/projects' })
+
+    expect(invalid.statusCode).toBe(400)
+    expect(invalid.json()).toMatchObject({ code: 'VALIDATION_ERROR' })
+    expect(list.json()).toMatchObject({ items: [], total: 0 })
+  })
+
+  it('creates, reads, searches, updates, archives, and restores projects', async () => {
+    const app = await createTestApp()
+    const alpha = await createProject(app, 'Alpha')
+    await createProject(app, 'Beta')
+
+    const search = await app.inject({
+      method: 'GET',
+      url: '/api/v1/projects?search=Al&sort=name&direction=desc&limit=10&offset=0',
+    })
+    expect(search.statusCode).toBe(200)
+    expect(search.json()).toMatchObject({
+      items: [{ id: alpha.id, name: 'Alpha' }],
+      limit: 10,
+      offset: 0,
+      total: 1,
+    })
+
+    const update = await app.inject({
+      method: 'PATCH',
+      payload: {
+        accentColor: '#7357ff',
+        description: 'A focused launch',
+        targetDate: '2026-08-20',
+      },
+      url: `/api/v1/projects/${alpha.id}`,
+    })
+    expect(update.statusCode).toBe(200)
+    expect(update.json()).toMatchObject({
+      accentColor: '#7357ff',
+      description: 'A focused launch',
+      targetDate: '2026-08-20',
+    })
+
+    const archive = await app.inject({
+      method: 'DELETE',
+      url: `/api/v1/projects/${alpha.id}`,
+    })
+    expect(archive.statusCode).toBe(204)
+
+    const archived = await app.inject({
+      method: 'GET',
+      url: '/api/v1/projects?archived=true',
+    })
+    expect(archived.json()).toMatchObject({
+      items: [{ id: alpha.id }],
+      total: 1,
+    })
+
+    const restore = await app.inject({
+      method: 'PATCH',
+      payload: { archived: false },
+      url: `/api/v1/projects/${alpha.id}`,
+    })
+    expect(restore.statusCode).toBe(200)
+    expect(restore.json()).toMatchObject({ archivedAt: null })
+  })
+
+  it('returns 404 and domain conflicts with stable envelopes', async () => {
+    const app = await createTestApp()
+
+    const missing = await app.inject({
+      method: 'GET',
+      url: '/api/v1/projects/999',
+    })
+    expect(missing.statusCode).toBe(404)
+    expect(missing.json()).toEqual({
+      code: 'NOT_FOUND',
+      message: 'Project was not found.',
+    })
+
+    const project = await createProject(app)
+    const conflict = await app.inject({
+      method: 'PATCH',
+      payload: { startDate: '2026-08-20', targetDate: '2026-08-10' },
+      url: `/api/v1/projects/${project.id}`,
+    })
+    expect(conflict.statusCode).toBe(409)
+    expect(conflict.json()).toMatchObject({ code: 'INVALID_STATE' })
+  })
+})
+
+describe('task, tag, history, and dashboard API', () => {
+  it('manages tasks, progress history, tags, filters, and aggregates', async () => {
+    const app = await createTestApp()
+    const project = await createProject(app)
+    const task = await createTask(app, project.id, {
+      dueDate: '2026-08-03',
+      name: 'Ship API',
+      priority: 'high',
+    })
+    await createTask(app, project.id, {
+      name: 'Resolve blocker',
+      status: 'blocked',
+    })
+    await createTask(app, project.id, {
+      name: 'Already complete',
+      progress: 25,
+      status: 'completed',
+    })
+
+    const progress = await app.inject({
+      method: 'PATCH',
+      payload: { note: 'Core routes working', progress: 40 },
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    expect(progress.statusCode).toBe(200)
+    expect(progress.json()).toMatchObject({ progress: 40 })
+
+    const history = await app.inject({
+      method: 'GET',
+      url: `/api/v1/tasks/${task.id}/progress-events`,
+    })
+    expect(history.statusCode).toBe(200)
+    expect(history.json()).toMatchObject({
+      items: [
+        {
+          newProgress: 40,
+          note: 'Core routes working',
+          previousProgress: 0,
+        },
+      ],
+      total: 1,
+    })
+
+    const createdTag = await app.inject({
+      method: 'POST',
+      payload: { color: '#22aa88', label: 'Backend Work' },
+      url: '/api/v1/tags',
+    })
+    expect(createdTag.statusCode).toBe(201)
+    const tag = createdTag.json<{ id: number }>()
+
+    const duplicateTag = await app.inject({
+      method: 'POST',
+      payload: { label: ' backend   work ' },
+      url: '/api/v1/tags',
+    })
+    expect(duplicateTag.statusCode).toBe(409)
+
+    const tags = await app.inject({ method: 'GET', url: '/api/v1/tags' })
+    expect(tags.statusCode).toBe(200)
+    expect(tags.json()).toMatchObject({
+      items: [{ id: tag.id, normalizedName: 'backend-work' }],
+    })
+
+    const assignment = await app.inject({
+      method: 'PUT',
+      url: `/api/v1/tasks/${task.id}/tags/${tag.id}`,
+    })
+    expect(assignment.statusCode).toBe(200)
+    expect(assignment.json()).toMatchObject({
+      tags: [{ id: tag.id, normalizedName: 'backend-work' }],
+    })
+
+    const filtered = await app.inject({
+      method: 'GET',
+      url: `/api/v1/projects/${project.id}/tasks?tagId=${tag.id}&priority=high&sort=progress&direction=desc`,
+    })
+    expect(filtered.statusCode).toBe(200)
+    expect(filtered.json()).toMatchObject({
+      items: [{ id: task.id }],
+      total: 1,
+    })
+
+    const projectDetail = await app.inject({
+      method: 'GET',
+      url: `/api/v1/projects/${project.id}`,
+    })
+    expect(projectDetail.json()).toMatchObject({
+      completion: 46.67,
+      taskCount: 3,
+    })
+
+    const dashboard = await app.inject({
+      method: 'GET',
+      url: '/api/v1/dashboard',
+    })
+    expect(dashboard.statusCode).toBe(200)
+    expect(dashboard.json()).toEqual({
+      activeProjects: 1,
+      averageProgress: 46.67,
+      blockedTasks: 1,
+      completedTasks: 1,
+      overdueTasks: 1,
+      totalTasks: 3,
+    })
+
+    const removal = await app.inject({
+      method: 'DELETE',
+      url: `/api/v1/tasks/${task.id}/tags/${tag.id}`,
+    })
+    expect(removal.statusCode).toBe(204)
+
+    const archive = await app.inject({
+      method: 'DELETE',
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    expect(archive.statusCode).toBe(204)
+
+    const archived = await app.inject({
+      method: 'GET',
+      url: `/api/v1/projects/${project.id}/tasks?archived=true`,
+    })
+    expect(archived.json()).toMatchObject({
+      items: [{ id: task.id }],
+      total: 1,
+    })
+
+    const restore = await app.inject({
+      method: 'PATCH',
+      payload: { archived: false },
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    expect(restore.statusCode).toBe(200)
+    expect(restore.json()).toMatchObject({ archivedAt: null })
+  })
+
+  it('enforces completed-task transition rules', async () => {
+    const app = await createTestApp()
+    const project = await createProject(app)
+    const task = await createTask(app, project.id, {
+      name: 'Complete task',
+      status: 'completed',
+    })
+
+    const completed = await app.inject({
+      method: 'GET',
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    expect(completed.json()).toMatchObject({
+      completedAt: fixedNow.toISOString(),
+      progress: 100,
+      status: 'completed',
+    })
+
+    const invalid = await app.inject({
+      method: 'PATCH',
+      payload: { progress: 50 },
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    expect(invalid.statusCode).toBe(409)
+    expect(invalid.json()).toMatchObject({ code: 'INVALID_STATE' })
+
+    const reopened = await app.inject({
+      method: 'PATCH',
+      payload: { progress: 50, status: 'in_progress' },
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    expect(reopened.statusCode).toBe(200)
+    expect(reopened.json()).toMatchObject({
+      completedAt: null,
+      progress: 50,
+      status: 'in_progress',
+    })
+  })
+
+  it('rolls back task progress when history persistence fails', async () => {
+    const app = await createTestApp()
+    const project = await createProject(app)
+    const task = await createTask(app, project.id)
+
+    // Inject a storage failure after the task update but before transaction commit.
+    // Reach the test database through a setup-only route-free handle by creating a trigger
+    // before the request. The connection itself remains owned by Fastify.
+    const directory = temporaryDirectories.at(-1)
+    if (!directory) {
+      throw new Error('Test database directory was not created')
+    }
+    const direct = await openDatabase({
+      databasePath: path.join(directory, 'test.sqlite'),
+    })
+    direct.client.exec(`
+      CREATE TRIGGER fail_progress_history
+      BEFORE INSERT ON progress_events
+      BEGIN
+        SELECT RAISE(ABORT, 'injected progress history failure');
+      END;
+    `)
+    direct.close()
+
+    const failed = await app.inject({
+      method: 'PATCH',
+      payload: { progress: 60 },
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    expect(failed.statusCode).toBe(500)
+    expect(failed.json()).toEqual({
+      code: 'INTERNAL_ERROR',
+      message: 'An unexpected error occurred.',
+    })
+
+    const unchanged = await app.inject({
+      method: 'GET',
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    expect(unchanged.json()).toMatchObject({ progress: 0 })
+  })
+})

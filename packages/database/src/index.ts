@@ -11,12 +11,26 @@ export {
   type DatabaseIdentityErrorCode,
 } from './errors.js'
 export type {
+  DashboardStats,
+  Page,
+  ProgressChange,
+  ProjectListOptions,
   ProjectRepository,
+  ProjectUpdateValues,
+  ProjectWithStats,
   Repositories,
+  TagListOptions,
   TagRepository,
+  TaskListOptions,
   TaskRepository,
+  TaskUpdateValues,
+  TaskWithTags,
+  WorkspaceRepository,
 } from './repositories.js'
-export { createRepositories } from './repositories.js'
+export {
+  createRepositories,
+  createWorkspaceRepository,
+} from './repositories.js'
 export {
   appMetadata,
   databaseMajorVersion,

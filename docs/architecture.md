@@ -18,7 +18,7 @@ Domain services and typed repositories
 SQLite through Drizzle and Node built-in SQLite
 ```
 
-The database layer is implemented in roadmap phase 2. The typed product API remains scheduled for phase 3.
+HTTP requests flow through schema-validated routes, domain services, and typed repositories. Route handlers contain no SQL or product transition logic.
 
 ## Package responsibilities
 
@@ -27,7 +27,8 @@ The database layer is implemented in roadmap phase 2. The typed product API rema
 - Creates and configures Fastify.
 - Owns process startup, environment validation, logging, and shutdown.
 - Hosts API routes and built frontend assets.
-- Depends on the database package and will use shared contracts once the typed API exists.
+- Applies shared TypeBox schemas to every product request and response.
+- Owns domain services for lifecycle transitions, validation across fields, and response mapping.
 
 The application factory is separate from `server.ts` so tests can exercise Fastify without opening a network socket.
 
@@ -39,12 +40,14 @@ The application factory is separate from `server.ts` so tests can exercise Fasti
 
 ### `packages/contracts`
 
-- Will define versioned request and response schemas once the typed API is implemented.
+- Defines versioned TypeBox request, query, parameter, response, and error schemas.
+- Provides the corresponding static TypeScript types to API and web consumers.
 - Must not depend on Fastify route implementations, React, or the database.
 
 ### `packages/database`
 
 - Owns the fresh v2 schema, migrations, connection lifecycle, and repositories.
+- Owns database filtering, bounded sorting, pagination, transactions, and aggregate queries.
 - Must not expose raw rows as public API contracts.
 - Must not recognize or modify v1 databases.
 
@@ -71,6 +74,12 @@ Avoid imports between `apps/web` and `apps/api`. Avoid circular workspace depend
 Runtime environment access is isolated in `apps/api/src/config.ts`. Code outside the composition root should receive typed configuration rather than reading `process.env` directly.
 
 `DATABASE_PATH` selects the SQLite file. A nonexistent path is eligible for first-time creation. Every existing path is opened read-only and must contain the v2 product and major-version marker before it is reopened for migrations. See [Database architecture](database.md).
+
+## API boundaries
+
+The product API is versioned at `/api/v1`. Fastify routes validate their parameters, query strings, bodies, and responses with schemas from `packages/contracts`. Domain services enforce state transitions and coordinate repository transactions. Repositories alone own query construction and persistence.
+
+Errors use one stable envelope and do not expose internal exception or database details. `/health` reports process liveness without touching dependencies, while `/ready` checks that the database is usable. The process logs unexpected failures and closes the database during graceful shutdown. See the [API reference](api.md).
 
 ## Testing strategy
 

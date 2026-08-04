@@ -2,7 +2,7 @@
 
 pr0gbarz is being rebuilt as a focused, self-hosted project and progress tracker. The v2 application uses a React web interface, a Fastify API, and a fresh SQLite database.
 
-The current branch contains the phase 2 database foundation. It intentionally presents a minimal shell rather than product workflows.
+The current branch contains the phase 3 typed API foundation. It intentionally presents a minimal web shell while the product interface is rebuilt around the new API.
 
 ## Requirements
 
@@ -43,6 +43,12 @@ Configuration is validated before the server starts. Invalid values produce acti
 
 The first startup creates the parent directory, v2 schema, identity marker, and migration ledger. Existing files are inspected read-only before any migration or write-oriented SQLite setting is applied. Version 1, empty, malformed, and unrelated SQLite files are rejected without modification.
 
+## API
+
+The versioned product API is available under `/api/v1`. It provides projects, tasks, progress history, tags, and dashboard aggregates. Every request and response is checked against the shared TypeBox contracts.
+
+Use `GET /health` for process liveness and `GET /ready` for database readiness. See the [API reference](docs/api.md) for endpoints, query options, lifecycle rules, and error responses.
+
 ## Quality commands
 
 ```sh
@@ -61,8 +67,8 @@ npm run verify
 ```text
 apps/api             Fastify application and production host
 apps/web             React/Vite browser application
-packages/contracts   Shared API contracts (phase 3)
-packages/database    SQLite schema and repositories (phase 2)
+packages/contracts   Shared TypeBox API contracts
+packages/database    SQLite schema and typed repositories
 packages/ui          Reusable UI primitives (phase 4)
 tests/fixtures       Cross-package test fixtures
 ```
