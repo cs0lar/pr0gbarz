@@ -6,7 +6,7 @@ The phase 4 interface establishes the visual and interaction foundation for all 
 
 Tokens in `packages/ui/src/styles.css` define colour, spacing, typography, radii, elevation, focus, and motion. Components use semantic tokens such as `--color-surface` and `--color-ink-muted`; feature code must not depend on a theme-specific colour value.
 
-The interface uses the local system font stack and code-native SVG icons, so it makes no runtime asset requests to public CDNs. The restrained bar mark is both the wordmark and the progress motif.
+The interface bundles the Inter variable font and uses code-native SVG icons, so it makes no runtime asset requests to public CDNs. Bundling the font also keeps text metrics and visual baselines consistent across deployments. The restrained bar mark is both the wordmark and the progress motif.
 
 ## Themes and motion
 
