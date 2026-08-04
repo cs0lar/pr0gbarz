@@ -37,6 +37,7 @@ The application factory is separate from `server.ts` so tests can exercise Fasti
 - Owns the React application and browser-only concerns.
 - Uses shared contracts rather than importing API implementation details.
 - Treats remote data as server state rather than duplicating it in global client stores.
+- Owns routing, the typed API client, TanStack Query composition, themes, and application-level error handling.
 
 ### `packages/contracts`
 
@@ -53,7 +54,7 @@ The application factory is separate from `server.ts` so tests can exercise Fasti
 
 ### `packages/ui`
 
-- Will contain reusable accessible primitives and design tokens.
+- Contains reusable accessible primitives and CSS design tokens.
 - Must not contain product-domain behaviour or perform API calls.
 
 ## Dependency direction
@@ -86,8 +87,8 @@ Errors use one stable envelope and do not expose internal exception or database 
 - Unit tests cover configuration, calculations, and domain rules.
 - Fastify injection tests cover API behaviour without network sockets.
 - Repository integration tests use isolated temporary v2 databases.
-- Component tests will cover meaningful interactive states.
-- Playwright will cover critical end-to-end journeys when product workflows arrive.
+- Component tests cover meaningful interactive and automated accessibility states.
+- Playwright checks responsive light/dark screenshots and viewport overflow; critical end-to-end journeys will build on it as product workflows arrive.
 
 Tests must be deterministic and must not make external network calls.
 

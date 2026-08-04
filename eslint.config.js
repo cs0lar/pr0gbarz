@@ -37,7 +37,13 @@ export default tseslint.config(
       },
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['*.ts', 'packages/*/*.config.ts'],
+          allowDefaultProject: [
+            '*.ts',
+            'apps/web/playwright.config.ts',
+            'apps/web/visual-tests/*.ts',
+            'packages/*/*.config.ts',
+            'tests/*.ts',
+          ],
         },
         tsconfigRootDir: import.meta.dirname,
       },
@@ -55,7 +61,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.test.ts'],
+    files: ['**/*.test.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
