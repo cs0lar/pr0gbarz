@@ -1,40 +1,51 @@
 {
-  "name": "progbarz",
-  "version": "1.0.0",
-  "description": "Create task lists with associated progress bars",
-  "main": "server.js",
+  "name": "pr0gbarz",
+  "version": "2.0.0-alpha.1",
+  "description": "A focused, self-hosted project and progress tracker",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.17.0",
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=11 <12"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "start": "node server.js",
-    "test": "",
-    "migrate": "node ./sql/migrate.js"
+    "build": "npm run build --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
+    "dev": "concurrently --kill-others-on-fail --names api,web --prefix-colors blue,magenta \"npm run dev --workspace @pr0gbarz/api\" \"npm run dev --workspace @pr0gbarz/web\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --max-warnings 0",
+    "start": "npm run start --workspace @pr0gbarz/api",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cs0lar/ProGBarZ.git"
+    "url": "git+https://github.com/cs0lar/pr0gbarz.git"
   },
-  "keywords": [
-    "progressbars",
-    "fastify",
-    "tasks"
-  ],
-  "author": "cristiano.solarino@gmail.com",
   "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/cs0lar/ProGBarZ/issues"
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "concurrently": "^10.0.4",
+    "eslint": "^10.8.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.9.0",
+    "prettier": "^3.9.6",
+    "shx": "^0.4.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.66.0",
+    "vitest": "^4.1.10"
   },
-  "homepage": "https://github.com/cs0lar/ProGBarZ#readme",
-  "dependencies": {
-    "@fastify/static": "^7.0.4",
-    "dotenv": "^16.0.0",
-    "fastify": "^5.3.2",
-    "fastify-plugin": "^3.0.1",
-    "figlet": "^1.5.2",
-    "liquidjs": "^10.0.0",
-    "milligram": "^1.4.1",
-    "minimist": "^1.2.6",
-    "point-of-view": "^5.2.0",
-    "progressbar.js": "^1.1.1",
-    "sqlite3": "^5.1.5",
-    "underscore": "^1.13.3"
+  "allowScripts": {
+    "esbuild@0.28.1": true
   }
 }

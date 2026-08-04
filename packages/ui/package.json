@@ -1,0 +1,13 @@
+{
+  "name": "@pr0gbarz/ui",
+  "version": "2.0.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "shx rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  }
+}
