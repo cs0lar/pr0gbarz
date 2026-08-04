@@ -1,6 +1,7 @@
 export type RuntimeEnvironment = 'development' | 'test' | 'production'
 
 export interface AppConfig {
+  databasePath: string
   host: string
   nodeEnv: RuntimeEnvironment
   port: number
@@ -30,6 +31,13 @@ export function loadConfig(
   }
 
   const host = configuredHost ?? '127.0.0.1'
+  const configuredDatabasePath = environment.DATABASE_PATH?.trim()
+
+  if (configuredDatabasePath === '') {
+    throw new Error('DATABASE_PATH must not be empty when provided')
+  }
+
+  const databasePath = configuredDatabasePath ?? './data/pr0gbarz.sqlite'
   const rawPort = environment.PORT ?? '8080'
   const port = Number(rawPort)
 
@@ -40,6 +48,7 @@ export function loadConfig(
   }
 
   return {
+    databasePath,
     host,
     nodeEnv: nodeEnv as RuntimeEnvironment,
     port,

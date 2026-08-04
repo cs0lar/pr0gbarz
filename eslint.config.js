@@ -37,7 +37,7 @@ export default tseslint.config(
       },
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['*.ts'],
+          allowDefaultProject: ['*.ts', 'packages/*/*.config.ts'],
         },
         tsconfigRootDir: import.meta.dirname,
       },
