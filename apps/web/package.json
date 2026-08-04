@@ -7,6 +7,7 @@
     "build": "tsc -b && vite build",
     "clean": "shx rm -rf dist",
     "dev": "vite",
+    "pretest:visual": "npm --prefix ../.. run prebuild",
     "test:visual": "playwright test",
     "typecheck": "tsc -b --pretty false"
   },
