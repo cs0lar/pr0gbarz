@@ -30,7 +30,17 @@ The dashboard answers what needs attention before presenting detail: measured co
 
 Project search and sort choices live in the URL. `/projects/:projectId` is the stable project overview route, and browser back/forward navigation remains within the application shell. Create and edit use labelled dialogs; archive is confirmed and reversible from `/archive`. Mutations update cached views optimistically where an existing project is changed, restore the previous cache after failure, and provide live-region feedback.
 
-The project overview deliberately presents tasks read-only until the phase 6 task workspace. Missing dates or progress produce an explicit insufficient-data explanation instead of a speculative schedule status.
+Missing dates or progress produce an explicit insufficient-data explanation instead of a speculative schedule status.
+
+## Task workspace
+
+The project overview contains the phase 6 task workspace. Its responsive cards expose status, priority, dates, tags, progress, and explicit edit/archive actions without relying on colour. The same controls collapse into a one-column mobile layout rather than a horizontally scrolling table.
+
+Search, status, priority, tag, sort direction, task ordering, and active/archive selection are represented in the project URL. Manual ordering is available only in the unfiltered manual view so move controls always describe the persisted order. Move buttons have meaningful accessible names and work with mouse, touch, and keyboard input.
+
+Progress can be changed with a slider, a bounded numeric field, ten-point quick actions, or completion status. Editing a measured change may include an optional progress note. Optimistic quick changes restore cached task lists after a failed request and announce both success and rollback through the notification live region.
+
+Archive remains the reversible removal action. Task archive confirmation explains that progress history is retained; Undo and the project-scoped archived view both restore tasks.
 
 ## Verification
 

@@ -170,6 +170,8 @@ export const TaskDateRangeSchema = Type.Object({
 })
 
 export type TaskResponse = Static<typeof TaskSchema>
+export type TaskStatus = Static<typeof TaskStatusSchema>
+export type TaskPriority = Static<typeof TaskPrioritySchema>
 export type TagResponse = Static<typeof TagSchema>
 export type CreateTask = Static<typeof CreateTaskSchema>
 export type UpdateTask = Static<typeof UpdateTaskSchema>

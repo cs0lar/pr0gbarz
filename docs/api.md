@@ -50,6 +50,8 @@ Deletion is recoverable: DELETE endpoints archive records rather than removing t
 
 Task progress is between 0 and 100. Moving a task to `completed` sets progress to 100 and records its completion time. Reopening it clears that time. Progress changes and their optional notes are recorded atomically in progress history; a note without a progress change is rejected.
 
+When callers omit `sortPosition`, new projects and tasks are appended to the end of their active manual order. Task-workspace reorder controls persist the exchanged positions through the bounded PATCH contract.
+
 Names are trimmed, tag names are normalized for uniqueness, and invalid start/due date ranges are rejected. Duplicate project or tag names return a conflict response.
 
 ## Errors

@@ -1,13 +1,20 @@
 import type {
   CreateProject,
+  CreateTag,
+  CreateTask,
   DashboardResponse,
   ErrorResponse,
   ProjectListQuery,
   ProjectListResponse,
   ProjectResponse,
+  TagListQuery,
+  TagListResponse,
+  TagResponse,
   TaskListQuery,
   TaskListResponse,
+  TaskResponse,
   UpdateProject,
+  UpdateTask,
 } from '@pr0gbarz/contracts'
 
 export class ApiError extends Error {
@@ -77,4 +84,33 @@ export const api = {
     request<TaskListResponse>(
       `/api/v1/projects/${String(projectId)}/tasks${queryString(query)}`,
     ),
+  createTask: (projectId: number, task: CreateTask) =>
+    request<TaskResponse>(`/api/v1/projects/${String(projectId)}/tasks`, {
+      body: JSON.stringify(task),
+      method: 'POST',
+    }),
+  task: (id: number) => request<TaskResponse>(`/api/v1/tasks/${String(id)}`),
+  updateTask: (id: number, task: UpdateTask) =>
+    request<TaskResponse>(`/api/v1/tasks/${String(id)}`, {
+      body: JSON.stringify(task),
+      method: 'PATCH',
+    }),
+  archiveTask: (id: number) =>
+    request<null>(`/api/v1/tasks/${String(id)}`, { method: 'DELETE' }),
+  tags: (query: TagListQuery = {}) =>
+    request<TagListResponse>(`/api/v1/tags${queryString(query)}`),
+  createTag: (tag: CreateTag) =>
+    request<TagResponse>('/api/v1/tags', {
+      body: JSON.stringify(tag),
+      method: 'POST',
+    }),
+  addTaskTag: (taskId: number, tagId: number) =>
+    request<TaskResponse>(
+      `/api/v1/tasks/${String(taskId)}/tags/${String(tagId)}`,
+      { method: 'PUT' },
+    ),
+  removeTaskTag: (taskId: number, tagId: number) =>
+    request<null>(`/api/v1/tasks/${String(taskId)}/tags/${String(tagId)}`, {
+      method: 'DELETE',
+    }),
 }

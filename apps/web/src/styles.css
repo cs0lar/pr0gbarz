@@ -1056,3 +1056,269 @@
     }
   }
 }
+
+@layer features {
+  .task-workspace {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .task-workspace button {
+    position: relative;
+    z-index: 1;
+  }
+  .task-workspace__heading > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .task-toolbar {
+    display: flex;
+    align-items: end;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
+  .task-toolbar label {
+    display: grid;
+    gap: var(--space-1);
+    color: var(--color-ink-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .task-toolbar input,
+  .task-toolbar select,
+  .task-card select,
+  .task-form input,
+  .task-form select,
+  .task-form textarea,
+  .tag-form input {
+    min-height: 2.75rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink);
+    background: var(--color-surface);
+    font: inherit;
+  }
+  .task-toolbar input,
+  .task-toolbar select,
+  .task-card select,
+  .task-form input,
+  .task-form select,
+  .task-form textarea,
+  .tag-form input:not([type='color']) {
+    padding: 0 var(--space-3);
+  }
+  .task-toolbar__search {
+    flex: 1 1 14rem;
+  }
+  .task-toolbar input:focus-visible,
+  .task-toolbar select:focus-visible,
+  .task-card select:focus-visible,
+  .task-form input:focus-visible,
+  .task-form select:focus-visible,
+  .task-form textarea:focus-visible,
+  .tag-form input:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .task-list {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .task-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.45fr) auto;
+    align-items: center;
+    gap: var(--space-5);
+    padding: var(--space-5);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+  .task-card__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .task-card h3,
+  .task-card p {
+    margin: 0;
+  }
+  .task-card h3 {
+    font-size: 1rem;
+  }
+  .task-card p {
+    margin-top: var(--space-1);
+    overflow: hidden;
+    color: var(--color-ink-muted);
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .task-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    color: var(--color-ink-muted);
+    font-size: 0.72rem;
+  }
+  .priority {
+    text-transform: capitalize;
+  }
+  .priority--urgent,
+  .priority--high {
+    color: var(--color-danger);
+    font-weight: 750;
+  }
+  .task-tag {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    color: var(--color-accent-strong);
+    background: var(--color-accent-soft);
+    font-weight: 700;
+  }
+  .task-card__progress {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .task-card__quick-progress {
+    position: relative;
+    z-index: 3;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-1);
+  }
+  .task-card__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+  .task-card__actions select {
+    min-width: 8rem;
+  }
+  .move-controls {
+    display: flex;
+    gap: 1px;
+  }
+  .task-form,
+  .tag-form {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .task-form label,
+  .tag-form label,
+  .task-form legend {
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .task-form textarea {
+    min-height: 5rem;
+    padding-block: var(--space-3);
+    resize: vertical;
+  }
+  .progress-editor,
+  .tag-picker {
+    margin: 0;
+    padding: var(--space-3);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-sm);
+  }
+  .progress-editor__controls {
+    display: grid;
+    grid-template-columns: auto 1fr 5rem auto;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .progress-editor input[type='range'] {
+    min-height: 2rem;
+    padding: 0;
+    accent-color: var(--color-accent-strong);
+  }
+  .progress-editor__controls label {
+    display: flex;
+    align-items: center;
+  }
+  .progress-editor input[type='number'] {
+    width: 3.6rem;
+  }
+  .tag-picker > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .tag-picker label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+  }
+  .tag-picker input {
+    min-height: auto;
+  }
+  .tag-form input[type='color'] {
+    width: 5rem;
+    padding: 0.25rem;
+  }
+
+  @media (max-width: 1100px) {
+    .task-toolbar {
+      flex-wrap: wrap;
+    }
+    .task-card {
+      grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.5fr);
+    }
+    .task-card__actions {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .task-workspace__heading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .task-toolbar {
+      align-items: stretch;
+    }
+    .task-toolbar label,
+    .task-toolbar__search {
+      flex: 1 1 100%;
+    }
+    .task-card {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+      padding: var(--space-4);
+    }
+    .task-card__actions {
+      grid-column: auto;
+      justify-content: flex-start;
+    }
+    .task-card__actions label {
+      flex: 1 1 100%;
+    }
+    .task-card__actions select {
+      width: 100%;
+    }
+    .progress-editor__controls {
+      grid-template-columns: auto 1fr auto;
+    }
+    .progress-editor__controls label {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      justify-content: center;
+    }
+  }
+}
