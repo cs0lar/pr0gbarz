@@ -133,7 +133,19 @@ describe('project API', () => {
     expect(update.json()).toMatchObject({
       accentColor: '#7357ff',
       description: 'A focused launch',
+      scheduleHealth: 'insufficient_data',
       targetDate: '2026-08-20',
+    })
+
+    const manualOrder = await app.inject({
+      method: 'GET',
+      url: '/api/v1/projects?sort=manual',
+    })
+    expect(manualOrder.json()).toMatchObject({
+      items: [
+        { name: 'Alpha', sortPosition: 0 },
+        { name: 'Beta', sortPosition: 1 },
+      ],
     })
 
     const archive = await app.inject({
@@ -181,6 +193,66 @@ describe('project API', () => {
     })
     expect(conflict.statusCode).toBe(409)
     expect(conflict.json()).toMatchObject({ code: 'INVALID_STATE' })
+  })
+
+  it('reports schedule health without inventing a projection', async () => {
+    const app = await createTestApp()
+    const created = await app.inject({
+      method: 'POST',
+      payload: {
+        name: 'Scheduled launch',
+        startDate: '2026-07-01',
+        targetDate: '2026-08-31',
+      },
+      url: '/api/v1/projects',
+    })
+    const project = created.json<{ id: number }>()
+    const task = await createTask(app, project.id, {
+      name: 'Prepare release',
+      progress: 40,
+    })
+
+    expect(created.json()).toMatchObject({
+      scheduleHealth: 'insufficient_data',
+    })
+
+    const atRisk = await app.inject({
+      method: 'GET',
+      url: `/api/v1/projects/${project.id}`,
+    })
+    expect(atRisk.json()).toMatchObject({ scheduleHealth: 'at_risk' })
+
+    await app.inject({
+      method: 'PATCH',
+      payload: { progress: 50 },
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    const onTrack = await app.inject({
+      method: 'GET',
+      url: `/api/v1/projects/${project.id}`,
+    })
+    expect(onTrack.json()).toMatchObject({ scheduleHealth: 'on_track' })
+
+    const overdue = await app.inject({
+      method: 'PATCH',
+      payload: { targetDate: '2026-08-03' },
+      url: `/api/v1/projects/${project.id}`,
+    })
+    expect(overdue.json()).toMatchObject({ scheduleHealth: 'overdue' })
+
+    const complete = await app.inject({
+      method: 'PATCH',
+      payload: { status: 'completed' },
+      url: `/api/v1/tasks/${task.id}`,
+    })
+    expect(complete.statusCode).toBe(200)
+    const completedProject = await app.inject({
+      method: 'GET',
+      url: `/api/v1/projects/${project.id}`,
+    })
+    expect(completedProject.json()).toMatchObject({
+      scheduleHealth: 'complete',
+    })
   })
 })
 
@@ -281,12 +353,27 @@ describe('task, tag, history, and dashboard API', () => {
       url: '/api/v1/dashboard',
     })
     expect(dashboard.statusCode).toBe(200)
-    expect(dashboard.json()).toEqual({
+    expect(dashboard.json()).toMatchObject({
       activeProjects: 1,
       averageProgress: 46.67,
       blockedTasks: 1,
       completedTasks: 1,
       overdueTasks: 1,
+      recentProgress: [
+        {
+          newProgress: 40,
+          note: 'Core routes working',
+          previousProgress: 0,
+          projectName: 'Launch',
+          taskName: 'Ship API',
+        },
+        {
+          newProgress: 100,
+          previousProgress: 0,
+          projectName: 'Launch',
+          taskName: 'Already complete',
+        },
+      ],
       totalTasks: 3,
     })
 

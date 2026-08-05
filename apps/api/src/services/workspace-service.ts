@@ -44,7 +44,36 @@ function tagResponse(tag: Tag): TagResponse {
   }
 }
 
-function projectResponse(project: ProjectWithStats): ProjectResponse {
+type ScheduleHealth = ProjectResponse['scheduleHealth']
+
+function scheduleHealth(
+  project: ProjectWithStats,
+  today: string,
+): ScheduleHealth {
+  if (project.completion === 100) return 'complete'
+  if (
+    project.completion === null ||
+    !project.startDate ||
+    !project.targetDate
+  ) {
+    return 'insufficient_data'
+  }
+  if (today < project.startDate) return 'not_started'
+  if (today > project.targetDate) return 'overdue'
+
+  const start = Date.parse(`${project.startDate}T00:00:00Z`)
+  const target = Date.parse(`${project.targetDate}T00:00:00Z`)
+  const current = Date.parse(`${today}T00:00:00Z`)
+  if (target <= start) return project.completion > 0 ? 'on_track' : 'at_risk'
+
+  const expected = ((current - start) / (target - start)) * 100
+  return project.completion + 10 < expected ? 'at_risk' : 'on_track'
+}
+
+function projectResponse(
+  project: ProjectWithStats,
+  today: string,
+): ProjectResponse {
   return {
     accentColor: project.accentColor,
     archivedAt: timestamp(project.archivedAt),
@@ -53,6 +82,7 @@ function projectResponse(project: ProjectWithStats): ProjectResponse {
     description: project.description,
     id: project.id,
     name: project.name,
+    scheduleHealth: scheduleHealth(project, today),
     sortPosition: project.sortPosition,
     startDate: project.startDate,
     targetDate: project.targetDate,
@@ -143,15 +173,22 @@ export class WorkspaceService {
 
   createProject(input: CreateProject): ProjectResponse {
     assertDateRange(input.startDate, input.targetDate, 'Target date')
+    const lastProject = this.#repository.listProjects({
+      archived: false,
+      direction: 'desc',
+      limit: 1,
+      offset: 0,
+      sort: 'manual',
+    }).items[0]
     const project = this.#repository.createProject({
       accentColor: input.accentColor,
       description: input.description,
       name: normalizeName(input.name),
-      sortPosition: input.sortPosition,
+      sortPosition: input.sortPosition ?? (lastProject?.sortPosition ?? -1) + 1,
       startDate: input.startDate,
       targetDate: input.targetDate,
     })
-    return projectResponse(this.requireProject(project.id))
+    return projectResponse(this.requireProject(project.id), this.today())
   }
 
   createTag(input: CreateTag): TagResponse {
@@ -205,11 +242,18 @@ export class WorkspaceService {
   }
 
   dashboard(): DashboardResponse {
-    return this.#repository.dashboard(this.#now().toISOString().slice(0, 10))
+    const stats = this.#repository.dashboard(this.today())
+    return {
+      ...stats,
+      recentProgress: stats.recentProgress.map((event) => ({
+        ...event,
+        occurredAt: event.occurredAt.toISOString(),
+      })),
+    }
   }
 
   getProject(id: number): ProjectResponse {
-    return projectResponse(this.requireProject(id))
+    return projectResponse(this.requireProject(id), this.today())
   }
 
   getTask(id: number): TaskResponse {
@@ -244,7 +288,9 @@ export class WorkspaceService {
       sort: query.sort ?? 'manual',
     })
     return {
-      items: page.items.map(projectResponse),
+      items: page.items.map((project) =>
+        projectResponse(project, this.today()),
+      ),
       limit,
       offset,
       total: page.total,
@@ -320,7 +366,7 @@ export class WorkspaceService {
       throw notFound('Project')
     }
 
-    return projectResponse(this.requireProject(id))
+    return projectResponse(this.requireProject(id), this.today())
   }
 
   updateTask(id: number, input: UpdateTask): TaskResponse {
@@ -405,6 +451,10 @@ export class WorkspaceService {
       throw notFound('Project')
     }
     return project
+  }
+
+  private today(): string {
+    return this.#now().toISOString().slice(0, 10)
   }
 
   private requireTag(id: number): Tag {

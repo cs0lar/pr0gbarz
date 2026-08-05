@@ -110,7 +110,14 @@ export interface DashboardStats {
   blockedTasks: number
   completedTasks: number
   overdueTasks: number
+  recentProgress: DashboardProgress[]
   totalTasks: number
+}
+
+export interface DashboardProgress extends ProgressEvent {
+  projectId: number
+  projectName: string
+  taskName: string
 }
 
 export interface WorkspaceRepository {
@@ -399,6 +406,25 @@ export function createWorkspaceRepository(
           ),
         )
         .get()?.value
+      const recentProgress = db
+        .select({
+          id: progressEvents.id,
+          newProgress: progressEvents.newProgress,
+          note: progressEvents.note,
+          occurredAt: progressEvents.occurredAt,
+          previousProgress: progressEvents.previousProgress,
+          projectId: projects.id,
+          projectName: projects.name,
+          taskId: tasks.id,
+          taskName: tasks.name,
+        })
+        .from(progressEvents)
+        .innerJoin(tasks, eq(tasks.id, progressEvents.taskId))
+        .innerJoin(projects, eq(projects.id, tasks.projectId))
+        .where(and(isNull(tasks.archivedAt), isNull(projects.archivedAt)))
+        .orderBy(desc(progressEvents.occurredAt), desc(progressEvents.id))
+        .limit(5)
+        .all()
 
       return {
         activeProjects: toNumber(activeProjects),
@@ -410,6 +436,7 @@ export function createWorkspaceRepository(
         blockedTasks: toNumber(blockedTasks),
         completedTasks: toNumber(completedTasks),
         overdueTasks: toNumber(overdueTasks),
+        recentProgress,
         totalTasks: toNumber(taskStats?.totalTasks),
       }
     },

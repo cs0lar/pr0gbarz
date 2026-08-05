@@ -1,6 +1,6 @@
 import { Button, IconButton } from '@pr0gbarz/ui'
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 
 import { Icon, type IconName } from './icons.js'
 import { useTheme } from './theme-context.js'
@@ -81,6 +81,7 @@ function useOnlineStatus() {
 
 export function AppShell() {
   const online = useOnlineStatus()
+  const navigate = useNavigate()
 
   return (
     <div className="app-frame">
@@ -123,9 +124,10 @@ export function AppShell() {
             <ThemeQuickToggle />
             <Button
               className="desktop-create"
-              disabled
+              onClick={() => {
+                void navigate('/projects?create=1')
+              }}
               size="compact"
-              title="Project creation arrives in phase 5"
             >
               <Icon name="plus" />
               New project
