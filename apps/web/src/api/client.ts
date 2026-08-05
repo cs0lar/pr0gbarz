@@ -5,6 +5,9 @@ import type {
   ProjectListQuery,
   ProjectListResponse,
   ProjectResponse,
+  TaskListQuery,
+  TaskListResponse,
+  UpdateProject,
 } from '@pr0gbarz/contracts'
 
 export class ApiError extends Error {
@@ -47,6 +50,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiError(response.status, error)
   }
 
+  if (response.status === 204) return null as T
+
   return (await response.json()) as T
 }
 
@@ -59,4 +64,17 @@ export const api = {
       body: JSON.stringify(project),
       method: 'POST',
     }),
+  project: (id: number) =>
+    request<ProjectResponse>(`/api/v1/projects/${String(id)}`),
+  updateProject: (id: number, project: UpdateProject) =>
+    request<ProjectResponse>(`/api/v1/projects/${String(id)}`, {
+      body: JSON.stringify(project),
+      method: 'PATCH',
+    }),
+  archiveProject: (id: number) =>
+    request<null>(`/api/v1/projects/${String(id)}`, { method: 'DELETE' }),
+  projectTasks: (projectId: number, query: TaskListQuery = {}) =>
+    request<TaskListResponse>(
+      `/api/v1/projects/${String(projectId)}/tasks${queryString(query)}`,
+    ),
 }

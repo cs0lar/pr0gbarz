@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { Component, type ErrorInfo, type ReactNode, useState } from 'react'
 import {
   createBrowserRouter,
   isRouteErrorResponse,
@@ -11,21 +11,12 @@ import { AppShell } from './components/AppShell.js'
 import { ToastProvider } from './components/ToastProvider.js'
 import { ThemeProvider } from './components/ThemeProvider.js'
 import {
-  ArchivePage,
   ComponentsPage,
   DashboardPage,
   NotFoundPage,
+  ProjectDetailPage,
   ProjectsPage,
 } from './pages.js'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 30_000,
-    },
-  },
-})
 
 function RouteError() {
   const error = useRouteError()
@@ -36,20 +27,34 @@ function RouteError() {
   return <NotFoundPage description={message} />
 }
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <AppShell />,
-    errorElement: <RouteError />,
-    children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'projects', element: <ProjectsPage /> },
-      { path: 'archive', element: <ArchivePage /> },
-      { path: 'components', element: <ComponentsPage /> },
-      { path: '*', element: <NotFoundPage /> },
-    ],
-  },
-])
+function createRouter() {
+  return createBrowserRouter([
+    {
+      path: '/',
+      element: <AppShell />,
+      errorElement: <RouteError />,
+      children: [
+        { index: true, element: <DashboardPage /> },
+        { path: 'projects', element: <ProjectsPage /> },
+        { path: 'projects/:projectId', element: <ProjectDetailPage /> },
+        { path: 'archive', element: <ProjectsPage archived /> },
+        { path: 'components', element: <ComponentsPage /> },
+        { path: '*', element: <NotFoundPage /> },
+      ],
+    },
+  ])
+}
+
+function createQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        staleTime: 30_000,
+      },
+    },
+  })
+}
 
 interface ErrorBoundaryState {
   failed: boolean
@@ -100,6 +105,9 @@ class ApplicationErrorBoundary extends Component<
 }
 
 export function App() {
+  const [queryClient] = useState(createQueryClient)
+  const [router] = useState(createRouter)
+
   return (
     <ApplicationErrorBoundary>
       <ThemeProvider>

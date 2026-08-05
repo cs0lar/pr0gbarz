@@ -3,7 +3,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import axe from 'axe-core'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { App } from './App.js'
 
@@ -12,10 +12,42 @@ describe('application shell', () => {
     localStorage.clear()
     document.documentElement.removeAttribute('data-theme')
     window.history.replaceState({}, '', '/')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url
+        if (url.includes('/api/v1/dashboard')) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                activeProjects: 0,
+                averageProgress: null,
+                blockedTasks: 0,
+                completedTasks: 0,
+                overdueTasks: 0,
+                recentProgress: [],
+                totalTasks: 0,
+              }),
+            ),
+          )
+        }
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ items: [], limit: 100, offset: 0, total: 0 }),
+          ),
+        )
+      }),
+    )
   })
 
   afterEach(() => {
     document.body.innerHTML = ''
+    vi.unstubAllGlobals()
   })
 
   it('navigates without a page reload', async () => {
