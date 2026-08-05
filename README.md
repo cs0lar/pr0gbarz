@@ -2,7 +2,7 @@
 
 pr0gbarz is being rebuilt as a focused, self-hosted project and progress tracker. The v2 application uses a React web interface, a Fastify API, and a fresh SQLite database.
 
-The current branch contains the phase 5 dashboard and project workspace. Projects can be searched, ordered, created, edited, archived, restored, and opened through shareable routes; task editing arrives in phase 6.
+The current branch contains the phase 6 task workspace. Projects and tasks can be created, edited, searched, filtered, ordered, archived, and restored through responsive, URL-addressable workflows.
 
 ## Requirements
 

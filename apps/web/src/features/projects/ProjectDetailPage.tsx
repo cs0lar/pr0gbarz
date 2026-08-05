@@ -14,6 +14,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { ApiError } from '../../api/client.js'
 import { useToast } from '../../components/toast-context.js'
+import { TaskWorkspace } from '../tasks/TaskWorkspace.js'
 import { ProjectFormDialog } from './ProjectFormDialog.js'
 import { useArchiveProject, useProject, useProjectTasks } from './queries.js'
 import { healthLabels, healthTone } from './schedule-health.js'
@@ -185,45 +186,7 @@ export function ProjectDetailPage() {
         </Card>
       </div>
 
-      <section
-        className="dashboard-section"
-        aria-labelledby="project-tasks-title"
-      >
-        <div className="section-heading">
-          <div>
-            <span>Work</span>
-            <h2 id="project-tasks-title">Tasks</h2>
-          </div>
-          <Badge>Task workspace in phase 6</Badge>
-        </div>
-        <Card className="task-preview">
-          {tasks.isPending ? (
-            <Skeleton lines={3} />
-          ) : tasks.isError ? (
-            <EmptyState
-              description="Task summaries could not be loaded."
-              title="Tasks unavailable"
-            />
-          ) : activeTasks.length === 0 ? (
-            <EmptyState
-              description="Task creation and editing arrive in the next phase."
-              title="No tasks in this project yet"
-            />
-          ) : (
-            <ul>
-              {activeTasks.slice(0, 8).map((task) => (
-                <li key={task.id}>
-                  <div>
-                    <strong>{task.name}</strong>
-                    <span>{task.status.replaceAll('_', ' ')}</span>
-                  </div>
-                  <span>{String(task.progress)}%</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </section>
+      <TaskWorkspace projectId={id} />
 
       <ProjectFormDialog
         onClose={() => {

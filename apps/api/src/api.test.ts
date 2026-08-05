@@ -348,6 +348,18 @@ describe('task, tag, history, and dashboard API', () => {
       taskCount: 3,
     })
 
+    const manualOrder = await app.inject({
+      method: 'GET',
+      url: `/api/v1/projects/${project.id}/tasks?sort=manual`,
+    })
+    expect(manualOrder.json()).toMatchObject({
+      items: [
+        { name: 'Ship API', sortPosition: 0 },
+        { name: 'Resolve blocker', sortPosition: 1 },
+        { name: 'Already complete', sortPosition: 2 },
+      ],
+    })
+
     const dashboard = await app.inject({
       method: 'GET',
       url: '/api/v1/dashboard',

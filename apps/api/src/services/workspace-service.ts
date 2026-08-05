@@ -214,6 +214,14 @@ export class WorkspaceService {
     const now = this.#now()
     const status = input.status ?? 'backlog'
     const progress = status === 'completed' ? 100 : (input.progress ?? 0)
+    const lastTask = this.#repository.listTasks({
+      archived: false,
+      direction: 'desc',
+      limit: 1,
+      offset: 0,
+      projectId,
+      sort: 'manual',
+    }).items[0]
     const task = this.#repository.createTask(
       {
         completedAt: status === 'completed' ? now : null,
@@ -224,7 +232,8 @@ export class WorkspaceService {
         priority: input.priority,
         progress,
         projectId,
-        sortPosition: input.sortPosition,
+        sortPosition:
+          input.sortPosition ?? (lastTask ? lastTask.sortPosition + 1 : 0),
         startDate: input.startDate,
         status,
         updatedAt: now,
