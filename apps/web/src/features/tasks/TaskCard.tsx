@@ -21,6 +21,7 @@ export function TaskCard({
   canMoveUp,
   onArchive,
   onEdit,
+  onHistory,
   onMove,
   onProgress,
   onRestore,
@@ -31,6 +32,7 @@ export function TaskCard({
   canMoveUp?: boolean | undefined
   onArchive?: ((task: TaskResponse) => void) | undefined
   onEdit?: ((task: TaskResponse) => void) | undefined
+  onHistory?: ((task: TaskResponse) => void) | undefined
   onMove?: ((task: TaskResponse, direction: -1 | 1) => void) | undefined
   onProgress?: ((task: TaskResponse, progress: number) => void) | undefined
   onRestore?: ((task: TaskResponse) => void) | undefined
@@ -147,6 +149,17 @@ export function TaskCard({
             variant="secondary"
           >
             Edit
+          </Button>
+        ) : null}
+        {onHistory ? (
+          <Button
+            onClick={() => {
+              onHistory(task)
+            }}
+            size="compact"
+            variant="ghost"
+          >
+            History
           </Button>
         ) : null}
         {onArchive ? (

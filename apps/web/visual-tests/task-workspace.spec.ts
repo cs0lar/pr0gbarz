@@ -36,11 +36,37 @@ test('manages tasks across desktop and mobile layouts', async ({ page }) => {
     updatedAt: '2026-08-05T09:00:00.000Z',
   }
   let tasks = [baseTask]
+  const analytics = {
+    completedTasks: 0,
+    dailyProgress: [
+      { date: '2026-07-28', netProgressPoints: 10, updates: 1 },
+      { date: '2026-08-05', netProgressPoints: 20, updates: 1 },
+    ],
+    generatedAt: '2026-08-05T12:00:00.000Z',
+    projectId: 1,
+    projection: {
+      projectedCompletionDate: '2026-09-15',
+      state: 'available',
+    },
+    remainingTasks: 1,
+    stalledTasks: [],
+    velocity: {
+      observedDays: 8,
+      pointsPerWeek: 26.25,
+      state: 'available',
+      updateCount: 2,
+      windowDays: 28,
+    },
+  }
 
   await page.route('**/api/v1/**', async (route) => {
     const request = route.request()
     const url = new URL(request.url())
     const path = url.pathname
+    if (path === '/api/v1/projects/1/analytics') {
+      await route.fulfill({ json: analytics })
+      return
+    }
     if (path === '/api/v1/projects/1') {
       await route.fulfill({
         json: {
@@ -103,6 +129,34 @@ test('manages tasks across desktop and mobile layouts', async ({ page }) => {
       await route.fulfill({ json: tasks.find((task) => task.id === id) })
       return
     }
+    if (path === '/api/v1/tasks/1/progress-events') {
+      await route.fulfill({
+        json: {
+          items: [
+            {
+              id: 2,
+              newProgress: 30,
+              note: 'Browser flow verified.',
+              occurredAt: '2026-08-05T11:00:00.000Z',
+              previousProgress: 10,
+              taskId: 1,
+            },
+            {
+              id: 1,
+              newProgress: 10,
+              note: null,
+              occurredAt: '2026-07-28T11:00:00.000Z',
+              previousProgress: 0,
+              taskId: 1,
+            },
+          ],
+          limit: 100,
+          offset: 0,
+          total: 2,
+        },
+      })
+      return
+    }
     if (path.startsWith('/api/v1/tasks/') && request.method() === 'DELETE') {
       const id = Number(path.split('/')[4])
       tasks = tasks.map((task) =>
@@ -137,6 +191,20 @@ test('manages tasks across desktop and mobile layouts', async ({ page }) => {
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true)
+
+  const history = page.getByRole('button', { name: 'History' })
+  await history.evaluate((element) => {
+    element.scrollIntoView({ block: 'center' })
+  })
+  await history.focus()
+  await page.keyboard.press('Enter')
+  await expect(
+    page.getByRole('img', {
+      name: /Test the task workspace measured progress/,
+    }),
+  ).toBeVisible()
+  await expect(page.getByText('Browser flow verified.')).toBeVisible()
+  await page.getByRole('button', { name: 'Close', exact: true }).click()
 
   const newTask = page.getByRole('button', { name: 'New task' })
   await newTask.evaluate((element) => {

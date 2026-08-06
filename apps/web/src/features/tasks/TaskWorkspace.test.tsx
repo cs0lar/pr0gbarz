@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -56,6 +56,7 @@ describe('task workspace', () => {
   })
 
   afterEach(() => {
+    cleanup()
     vi.unstubAllGlobals()
   })
 
@@ -140,6 +141,9 @@ describe('task workspace', () => {
     )
 
     expect(await screen.findByText('30%')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(failUpdate).toBeTypeOf('function')
+    })
     failUpdate?.()
     expect(
       await screen.findByText(/previous value was restored/),

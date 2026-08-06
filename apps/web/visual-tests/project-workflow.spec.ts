@@ -55,6 +55,30 @@ test('creates, edits, deep-links, archives, and restores a project', async ({
       await route.fulfill({ json: project })
       return
     }
+    if (url.pathname === '/api/v1/projects/1/analytics' && method === 'GET') {
+      await route.fulfill({
+        json: {
+          completedTasks: 0,
+          dailyProgress: [],
+          generatedAt: '2026-08-05T12:00:00.000Z',
+          projectId: 1,
+          projection: {
+            projectedCompletionDate: null,
+            state: 'insufficient_data',
+          },
+          remainingTasks: 0,
+          stalledTasks: [],
+          velocity: {
+            observedDays: 0,
+            pointsPerWeek: null,
+            state: 'insufficient_data',
+            updateCount: 0,
+            windowDays: 28,
+          },
+        },
+      })
+      return
+    }
     if (url.pathname === '/api/v1/projects/1' && method === 'PATCH') {
       const input = request.postDataJSON() as Record<string, unknown>
       archived = input.archived === false ? false : archived

@@ -42,6 +42,12 @@ Progress can be changed with a slider, a bounded numeric field, ten-point quick 
 
 Archive remains the reversible removal action. Task archive confirmation explains that progress history is retained; Undo and the project-scoped archived view both restore tasks.
 
+## Progress history and analytics
+
+The project overview presents completed and remaining work, recent velocity, projection, daily progress gained, and stalled work. Empty histories and unsupported projections say “insufficient data” instead of displaying a zero or invented date. Charts are native SVG figures with an accessible name, description, and visible textual summary, so their meaning does not depend on interpreting the line or colour.
+
+Each task exposes a History action. Its dialog shows at most the latest 100 append-only progress events, including optional notes, in newest-first order. The chart reconstructs those events chronologically while the adjacent ordered timeline retains exact previous/new values and timestamps.
+
 ## Verification
 
 Vitest and Testing Library cover primitive semantics, keyboard interaction, routing, theme persistence, the typed client, and automated axe checks. Playwright baselines cover 1440px desktop and 320px mobile layouts in light and dark themes, including an explicit horizontal-overflow assertion.

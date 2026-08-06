@@ -4,6 +4,8 @@ import type {
   CreateTask,
   DashboardResponse,
   ErrorResponse,
+  ProgressEventListResponse,
+  ProjectAnalyticsResponse,
   ProjectListQuery,
   ProjectListResponse,
   ProjectResponse,
@@ -73,6 +75,10 @@ export const api = {
     }),
   project: (id: number) =>
     request<ProjectResponse>(`/api/v1/projects/${String(id)}`),
+  projectAnalytics: (id: number) =>
+    request<ProjectAnalyticsResponse>(
+      `/api/v1/projects/${String(id)}/analytics`,
+    ),
   updateProject: (id: number, project: UpdateProject) =>
     request<ProjectResponse>(`/api/v1/projects/${String(id)}`, {
       body: JSON.stringify(project),
@@ -90,6 +96,10 @@ export const api = {
       method: 'POST',
     }),
   task: (id: number) => request<TaskResponse>(`/api/v1/tasks/${String(id)}`),
+  taskProgress: (id: number, limit = 100) =>
+    request<ProgressEventListResponse>(
+      `/api/v1/tasks/${String(id)}/progress-events?limit=${String(limit)}&offset=0`,
+    ),
   updateTask: (id: number, task: UpdateTask) =>
     request<TaskResponse>(`/api/v1/tasks/${String(id)}`, {
       body: JSON.stringify(task),

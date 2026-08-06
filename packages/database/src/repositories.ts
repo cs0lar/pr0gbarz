@@ -5,11 +5,13 @@ import {
   count,
   desc,
   eq,
+  gte,
   inArray,
   isNotNull,
   isNull,
   like,
   lt,
+  max,
   ne,
   sql,
   type SQL,
@@ -120,6 +122,11 @@ export interface DashboardProgress extends ProgressEvent {
   taskName: string
 }
 
+export interface TaskLastProgress {
+  lastProgressAt: Date
+  taskId: number
+}
+
 export interface WorkspaceRepository {
   addTagToTask(taskId: number, tagId: number): boolean
   archiveProject(id: number, archivedAt: Date | null): Project | undefined
@@ -137,6 +144,12 @@ export interface WorkspaceRepository {
     limit: number,
     offset: number,
   ): Page<ProgressEvent>
+  listProjectProgressEvents(
+    projectId: number,
+    since: Date,
+    limit: number,
+  ): ProgressEvent[]
+  listTaskLastProgress(projectId: number): TaskLastProgress[]
   listProjects(options: ProjectListOptions): Page<ProjectWithStats>
   listTags(options: TagListOptions): Tag[]
   listTasks(options: TaskListOptions): Page<TaskWithTags>
@@ -479,6 +492,44 @@ export function createWorkspaceRepository(
         ),
       }
     },
+    listProjectProgressEvents: (projectId, since, limit) =>
+      db
+        .select({
+          id: progressEvents.id,
+          newProgress: progressEvents.newProgress,
+          note: progressEvents.note,
+          occurredAt: progressEvents.occurredAt,
+          previousProgress: progressEvents.previousProgress,
+          taskId: progressEvents.taskId,
+        })
+        .from(progressEvents)
+        .innerJoin(tasks, eq(tasks.id, progressEvents.taskId))
+        .where(
+          and(
+            eq(tasks.projectId, projectId),
+            isNull(tasks.archivedAt),
+            gte(progressEvents.occurredAt, since),
+          ),
+        )
+        .orderBy(desc(progressEvents.occurredAt), desc(progressEvents.id))
+        .limit(limit)
+        .all(),
+    listTaskLastProgress: (projectId) =>
+      db
+        .select({
+          lastProgressAt: max(progressEvents.occurredAt),
+          taskId: tasks.id,
+        })
+        .from(tasks)
+        .innerJoin(progressEvents, eq(progressEvents.taskId, tasks.id))
+        .where(and(eq(tasks.projectId, projectId), isNull(tasks.archivedAt)))
+        .groupBy(tasks.id)
+        .all()
+        .flatMap((row) =>
+          row.lastProgressAt
+            ? [{ lastProgressAt: row.lastProgressAt, taskId: row.taskId }]
+            : [],
+        ),
     listProjects: (options) => {
       const conditions = and(...projectConditions(options))
       const rows = db

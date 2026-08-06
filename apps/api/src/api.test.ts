@@ -348,6 +348,18 @@ describe('task, tag, history, and dashboard API', () => {
       taskCount: 3,
     })
 
+    const analytics = await app.inject({
+      method: 'GET',
+      url: `/api/v1/projects/${project.id}/analytics`,
+    })
+    expect(analytics.statusCode).toBe(200)
+    expect(analytics.json()).toMatchObject({
+      completedTasks: 1,
+      projectId: project.id,
+      remainingTasks: 2,
+      velocity: { state: 'insufficient_data', windowDays: 28 },
+    })
+
     const manualOrder = await app.inject({
       method: 'GET',
       url: `/api/v1/projects/${project.id}/tasks?sort=manual`,

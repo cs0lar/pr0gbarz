@@ -9,6 +9,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { useToast } from '../../components/toast-context.js'
+import { TaskHistoryDialog } from '../analytics/TaskHistoryDialog.js'
 import { TagFormDialog } from './TagFormDialog.js'
 import { TaskCard } from './TaskCard.js'
 import { TaskFormDialog } from './TaskFormDialog.js'
@@ -69,6 +70,7 @@ export function TaskWorkspace({ projectId }: { projectId: number }) {
   const [editing, setEditing] = useState<TaskResponse | 'create' | null>(null)
   const [archiving, setArchiving] = useState<TaskResponse | null>(null)
   const [creatingTag, setCreatingTag] = useState(false)
+  const [historyTask, setHistoryTask] = useState<TaskResponse | null>(null)
   const items = useMemo(() => tasks.data?.items ?? [], [tasks.data?.items])
   const ordered = useMemo(
     () =>
@@ -342,6 +344,7 @@ export function TaskWorkspace({ projectId }: { projectId: number }) {
                 key={task.id}
                 onArchive={archived ? undefined : setArchiving}
                 onEdit={archived ? undefined : setEditing}
+                onHistory={setHistoryTask}
                 onMove={
                   canReorder
                     ? (item, moveDirection) => void move(item, moveDirection)
@@ -406,6 +409,14 @@ export function TaskWorkspace({ projectId }: { projectId: number }) {
         }}
         open={creatingTag}
       />
+      {historyTask ? (
+        <TaskHistoryDialog
+          onClose={() => {
+            setHistoryTask(null)
+          }}
+          task={historyTask}
+        />
+      ) : null}
       <Dialog
         description="Its progress history remains safe and the task can be restored from this project’s archive."
         onClose={() => {

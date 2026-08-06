@@ -19,6 +19,7 @@ The JSON product API is rooted at `/api/v1`. Dates use `YYYY-MM-DD`; timestamps 
 | GET    | `/api/v1/projects`                      | Search and list projects       |
 | POST   | `/api/v1/projects`                      | Create a project               |
 | GET    | `/api/v1/projects/:id`                  | Get a project with task totals |
+| GET    | `/api/v1/projects/:id/analytics`        | Get bounded progress insights  |
 | PATCH  | `/api/v1/projects/:id`                  | Update or restore a project    |
 | DELETE | `/api/v1/projects/:id`                  | Archive a project              |
 | GET    | `/api/v1/projects/:projectId/tasks`     | Search and list project tasks  |
@@ -43,6 +44,8 @@ List responses contain `items`, `offset`, `limit`, and `total`.
 Project responses include an unweighted mean of active task progress (or `null` when there are no active tasks) and a schedule-health state. Health is `insufficient_data` without progress and both dates, `not_started` before the start date, `overdue` after an unfinished target date, and `complete` at 100%. During the schedule, a project is `at_risk` when its completion trails linearly expected progress by more than ten percentage points; otherwise it is `on_track`. This intentionally simple phase 5 signal is not a completion-date projection.
 
 The dashboard returns active project/task totals, overdue and blocked task counts, overall measured completion, and up to five of the newest progress events from active work. Archived work is excluded.
+
+Project analytics summarizes active tasks and at most 1,000 progress events from the most recent 28 UTC calendar days. It returns completed and remaining counts, daily net progress, recent velocity, a conservative projected completion date, and up to 20 stalled tasks. Velocity and projection include an explicit `insufficient_data` state; see [Analytics calculations](analytics.md) for the thresholds and formulas.
 
 ## Lifecycle rules
 

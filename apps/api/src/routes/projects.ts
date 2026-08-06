@@ -6,6 +6,7 @@ import {
   NoContentSchema,
   ProjectListQuerySchema,
   ProjectListSchema,
+  ProjectAnalyticsSchema,
   ProjectSchema,
   UpdateProjectSchema,
 } from '@pr0gbarz/contracts'
@@ -43,6 +44,17 @@ export function registerProjectRoutes(
       reply.code(201)
       return service.createProject(request.body)
     },
+  )
+
+  typed.get(
+    '/api/v1/projects/:id/analytics',
+    {
+      schema: {
+        params: IdParamsSchema,
+        response: { 200: ProjectAnalyticsSchema, ...errorResponseSchemas },
+      },
+    },
+    (request) => service.projectAnalytics(request.params.id),
   )
 
   typed.get(

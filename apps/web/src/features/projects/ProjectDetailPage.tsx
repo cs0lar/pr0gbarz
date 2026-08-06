@@ -14,6 +14,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { ApiError } from '../../api/client.js'
 import { useToast } from '../../components/toast-context.js'
+import { ProjectAnalyticsPanel } from '../analytics/ProjectAnalyticsPanel.js'
 import { TaskWorkspace } from '../tasks/TaskWorkspace.js'
 import { ProjectFormDialog } from './ProjectFormDialog.js'
 import { useArchiveProject, useProject, useProjectTasks } from './queries.js'
@@ -185,6 +186,8 @@ export function ProjectDetailPage() {
           </p>
         </Card>
       </div>
+
+      <ProjectAnalyticsPanel projectId={id} />
 
       <TaskWorkspace projectId={id} />
 
