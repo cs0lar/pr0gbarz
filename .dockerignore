@@ -1,0 +1,13 @@
+.git
+.github
+.cache
+node_modules
+**/dist
+coverage
+test-results
+playwright-report
+data
+*.sqlite*
+*.db*
+*.backup
+.env*

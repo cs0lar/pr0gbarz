@@ -47,6 +47,19 @@ jobs:
       - name: Build production artifacts
         run: npm run build
 
+      - name: Smoke-test bare Node artifact
+        run: |
+          NODE_ENV=production HOST=127.0.0.1 PORT=8080 DATABASE_PATH="${RUNNER_TEMP}/bare-node.sqlite" node apps/api/dist/server.js &
+          server_pid=$!
+          trap 'kill ${server_pid}' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8080/ready; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+
   visual:
     name: Responsive visual checks
     runs-on: ubuntu-latest
@@ -70,3 +83,48 @@ jobs:
 
       - name: Compare responsive screenshots
         run: npm run test:visual --workspace @pr0gbarz/web
+
+  container:
+    name: Container smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build --tag pr0gbarz:ci .
+
+      - name: Start with persistent storage
+        run: docker run --detach --name pr0gbarz-ci --publish 8080:8080 --volume pr0gbarz-ci-data:/data pr0gbarz:ci
+
+      - name: Wait for readiness
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8080/ready; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs pr0gbarz-ci
+          exit 1
+
+      - name: Verify restart persistence
+        run: |
+          curl --fail --silent --header 'content-type: application/json' --data '{"name":"Persistent project"}' http://127.0.0.1:8080/api/v1/projects
+          docker restart pr0gbarz-ci
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8080/api/v1/projects | grep --quiet 'Persistent project'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs pr0gbarz-ci
+          exit 1
+
+      - name: Remove smoke-test resources
+        if: always()
+        run: |
+          docker rm --force pr0gbarz-ci || true
+          docker volume rm pr0gbarz-ci-data || true

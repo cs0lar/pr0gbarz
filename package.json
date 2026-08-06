@@ -14,6 +14,7 @@
     "packages/*"
   ],
   "scripts": {
+    "backup": "npm run prebuild && npm run build --workspace @pr0gbarz/api && npm run backup --workspace @pr0gbarz/api --",
     "build": "npm run build --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
     "prebuild": "npm run build --workspace @pr0gbarz/contracts && npm run build --workspace @pr0gbarz/database && npm run build --workspace @pr0gbarz/ui",

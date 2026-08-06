@@ -1,5 +1,10 @@
 export type AppErrorCode =
-  'CONFLICT' | 'INVALID_STATE' | 'NOT_FOUND' | 'VALIDATION_ERROR'
+  | 'CONFLICT'
+  | 'INVALID_IMPORT'
+  | 'INVALID_STATE'
+  | 'NOT_FOUND'
+  | 'PAYLOAD_TOO_LARGE'
+  | 'VALIDATION_ERROR'
 
 export class AppError extends Error {
   readonly code: AppErrorCode
@@ -30,4 +35,8 @@ export function conflict(message: string): AppError {
 
 export function invalidState(message: string): AppError {
   return new AppError(409, 'INVALID_STATE', message)
+}
+
+export function invalidImport(message: string): AppError {
+  return new AppError(400, 'INVALID_IMPORT', message)
 }

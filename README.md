@@ -2,7 +2,7 @@
 
 pr0gbarz is being rebuilt as a focused, self-hosted project and progress tracker. The v2 application uses a React web interface, a Fastify API, and a fresh SQLite database.
 
-The current branch contains the phase 6 task workspace. Projects and tasks can be created, edited, searched, filtered, ordered, archived, and restored through responsive, URL-addressable workflows.
+The current branch includes project/task workflows, progress analytics, and phase 8 portability and deployment support. Data can be exported as integrity-checked JSON, dry-run imported transactionally, reported as CSV, or copied with the verified SQLite backup command.
 
 ## Requirements
 
@@ -29,6 +29,8 @@ NODE_ENV=production npm start
 ```
 
 Fastify serves the compiled web application at `http://127.0.0.1:8080` by default. Set `HOST=0.0.0.0` to listen outside the local machine.
+
+The production artifact also ships as a non-root container with `/data` as its persistent volume. See [Deployment and data operations](docs/deployment.md) for bare-Node and Compose setup, JSON/CSV portability, verified SQLite backups, restore drills, upgrades, and rollback.
 
 ## Configuration
 
@@ -57,6 +59,7 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run backup -- --output ./backups/pr0gbarz.sqlite.backup
 npm run verify
 npm run test:visual --workspace @pr0gbarz/web
 ```

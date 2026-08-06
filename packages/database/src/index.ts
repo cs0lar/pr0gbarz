@@ -28,6 +28,13 @@ export type {
   WorkspaceRepository,
 } from './repositories.js'
 export {
+  importDatabaseSnapshot,
+  readDatabaseSnapshot,
+  type DatabaseSnapshot,
+  type ImportableSnapshot,
+  type ImportConflictPolicy,
+} from './portability.js'
+export {
   createRepositories,
   createWorkspaceRepository,
 } from './repositories.js'
