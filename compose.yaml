@@ -1,0 +1,12 @@
+services:
+  pr0gbarz:
+    build: .
+    image: pr0gbarz:2.0
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    volumes:
+      - pr0gbarz-data:/data
+
+volumes:
+  pr0gbarz-data:

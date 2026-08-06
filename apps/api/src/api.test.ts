@@ -22,7 +22,9 @@ afterEach(async () => {
   )
 })
 
-async function createTestApp(): Promise<TestApp> {
+async function createTestApp(
+  options: { bodyLimit?: number } = {},
+): Promise<TestApp> {
   const directory = await mkdtemp(path.join(tmpdir(), 'pr0gbarz-api-'))
   temporaryDirectories.push(directory)
   const database = await openDatabase({
@@ -32,6 +34,9 @@ async function createTestApp(): Promise<TestApp> {
     database,
     now: () => new Date(fixedNow),
     staticRoot: false,
+    ...(options.bodyLimit === undefined
+      ? {}
+      : { bodyLimit: options.bodyLimit }),
   })
   apps.push(app)
   return app
@@ -62,6 +67,22 @@ async function createTask(
 }
 
 describe('system API', () => {
+  it('returns a stable error when a request exceeds the body limit', async () => {
+    const app = await createTestApp({ bodyLimit: 64 })
+    const response = await app.inject({
+      headers: { 'content-type': 'application/json' },
+      method: 'POST',
+      payload: JSON.stringify({ value: 'x'.repeat(100) }),
+      url: '/api/v1/import/json',
+    })
+
+    expect(response.statusCode).toBe(413)
+    expect(response.json()).toEqual({
+      code: 'PAYLOAD_TOO_LARGE',
+      message: 'The request body exceeds the configured size limit.',
+    })
+  })
+
   it('reports database readiness', async () => {
     const app = await createTestApp()
 
@@ -84,6 +105,117 @@ describe('system API', () => {
       code: 'NOT_FOUND',
       message: 'The requested resource was not found.',
     })
+  })
+})
+
+describe('portability API', () => {
+  it('round-trips JSON through dry-run and transactional import', async () => {
+    const source = await createTestApp()
+    const project = await createProject(source, 'Portable project')
+    const task = await createTask(source, project.id, {
+      description: 'Preserve this text.',
+      name: 'Portable task',
+      progress: 40,
+      progressNote: 'First measured checkpoint.',
+      status: 'in_progress',
+    })
+    const tag = await source.inject({
+      method: 'POST',
+      payload: { label: 'Release' },
+      url: '/api/v1/tags',
+    })
+    await source.inject({
+      method: 'PUT',
+      url: `/api/v1/tasks/${task.id}/tags/${String(tag.json<{ id: number }>().id)}`,
+    })
+
+    const exported = await source.inject({
+      method: 'GET',
+      url: '/api/v1/export/json',
+    })
+    expect(exported.statusCode).toBe(200)
+    const backup = exported.json<Record<string, unknown>>()
+    const target = await createTestApp()
+    const dryRun = await target.inject({
+      method: 'POST',
+      payload: { backup, conflictPolicy: 'reject', mode: 'dry_run' },
+      url: '/api/v1/import/json',
+    })
+    expect(dryRun.statusCode, dryRun.body).toBe(200)
+    expect(dryRun.json()).toMatchObject({ applied: false, valid: true })
+    const stillEmpty = await target.inject({
+      method: 'GET',
+      url: '/api/v1/projects',
+    })
+    expect(stillEmpty.json()).toMatchObject({ total: 0 })
+
+    const applied = await target.inject({
+      method: 'POST',
+      payload: { backup, conflictPolicy: 'reject', mode: 'apply' },
+      url: '/api/v1/import/json',
+    })
+    expect(applied.statusCode).toBe(200)
+    expect(applied.json()).toMatchObject({ applied: true, valid: true })
+
+    const conflict = await target.inject({
+      method: 'POST',
+      payload: { backup, conflictPolicy: 'reject', mode: 'apply' },
+      url: '/api/v1/import/json',
+    })
+    expect(conflict.statusCode).toBe(409)
+    expect(conflict.json()).toMatchObject({ code: 'CONFLICT' })
+
+    const reexported = await target.inject({
+      method: 'GET',
+      url: '/api/v1/export/json',
+    })
+    expect(reexported.json()).toMatchObject({
+      data: exported.json<{ data: unknown }>().data,
+      integrity: exported.json<{ integrity: unknown }>().integrity,
+    })
+  })
+
+  it('rejects altered imports without partially writing', async () => {
+    const source = await createTestApp()
+    await createProject(source, 'Untampered name')
+    const exported = await source.inject({
+      method: 'GET',
+      url: '/api/v1/export/json',
+    })
+    const backup = exported.json<{
+      data: { projects: { name: string }[] }
+    }>()
+    const exportedProject = backup.data.projects[0]
+    if (!exportedProject) throw new Error('Expected an exported project')
+    exportedProject.name = 'Tampered name'
+
+    const target = await createTestApp()
+    const response = await target.inject({
+      method: 'POST',
+      payload: { backup, conflictPolicy: 'reject', mode: 'apply' },
+      url: '/api/v1/import/json',
+    })
+    expect(response.statusCode).toBe(400)
+    expect(response.json()).toMatchObject({ code: 'INVALID_IMPORT' })
+    const list = await target.inject({ method: 'GET', url: '/api/v1/projects' })
+    expect(list.json()).toMatchObject({ total: 0 })
+  })
+
+  it('exports quoted CSV and security headers', async () => {
+    const app = await createTestApp()
+    const project = await createProject(app, 'Project, one')
+    await createTask(app, project.id, { name: 'Task "quoted"' })
+
+    const response = await app.inject({
+      method: 'GET',
+      url: `/api/v1/export/tasks.csv?projectId=${String(project.id)}`,
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toContain('text/csv')
+    expect(response.headers['x-content-type-options']).toBe('nosniff')
+    expect(response.body).toContain('"Project, one"')
+    expect(response.body).toContain('"Task ""quoted"""')
   })
 })
 

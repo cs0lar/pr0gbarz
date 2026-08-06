@@ -20,8 +20,10 @@ import { fileURLToPath } from 'node:url'
 import { AppError } from './errors.js'
 import { registerApiRoutes } from './routes/index.js'
 import { WorkspaceService } from './services/workspace-service.js'
+import { PortabilityService } from './services/portability-service.js'
 
 export interface BuildAppOptions {
+  bodyLimit?: number
   database?: DatabaseConnection
   logger?: boolean
   now?: () => Date
@@ -64,7 +66,21 @@ function validationFieldErrors(
 export async function buildApp(
   options: BuildAppOptions = {},
 ): Promise<FastifyInstance> {
-  const app = Fastify({ logger: options.logger ?? false })
+  const app = Fastify({
+    bodyLimit: options.bodyLimit ?? 10 * 1024 * 1024,
+    logger: options.logger ?? false,
+  })
+
+  app.addHook('onSend', (_request, reply, payload, done) => {
+    reply.header('x-content-type-options', 'nosniff')
+    reply.header('x-frame-options', 'DENY')
+    reply.header('referrer-policy', 'no-referrer')
+    reply.header(
+      'content-security-policy',
+      "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'",
+    )
+    done(null, payload)
+  })
 
   if (options.database) {
     app.addHook('onClose', () => {
@@ -104,6 +120,17 @@ export async function buildApp(
       return reply.code(409).send({
         code: 'CONFLICT',
         message: 'The requested record conflicts with an existing record.',
+      })
+    }
+
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      error.code === 'FST_ERR_CTP_BODY_TOO_LARGE'
+    ) {
+      return reply.code(413).send({
+        code: 'PAYLOAD_TOO_LARGE',
+        message: 'The request body exceeds the configured size limit.',
       })
     }
 
@@ -152,6 +179,7 @@ export async function buildApp(
       new WorkspaceService(createWorkspaceRepository(options.database.db), {
         now: options.now,
       }),
+      new PortabilityService(options.database, options.now),
     )
   }
 

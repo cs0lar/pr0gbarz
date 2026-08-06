@@ -5,6 +5,7 @@
   "type": "module",
   "exports": "./dist/index.js",
   "scripts": {
+    "backup": "node dist/backup-database.js",
     "build": "tsc -p tsconfig.build.json",
     "clean": "node --run clean:dist",
     "clean:dist": "shx rm -rf dist",
