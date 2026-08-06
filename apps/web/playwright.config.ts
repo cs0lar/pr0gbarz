@@ -26,5 +26,15 @@ export default defineConfig({
       name: 'mobile',
       use: { ...devices['Pixel 5'], viewport: { height: 844, width: 320 } },
     },
+    {
+      name: 'firefox',
+      testMatch: /critical-flow\.spec\.ts/,
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      testMatch: /critical-flow\.spec\.ts/,
+      use: { ...devices['Desktop Safari'] },
+    },
   ],
 })

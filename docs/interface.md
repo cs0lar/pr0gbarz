@@ -34,7 +34,7 @@ Missing dates or progress produce an explicit insufficient-data explanation inst
 
 ## Task workspace
 
-The project overview contains the phase 6 task workspace. Its responsive cards expose status, priority, dates, tags, progress, and explicit edit/archive actions without relying on colour. The same controls collapse into a one-column mobile layout rather than a horizontally scrolling table.
+The project overview contains the task workspace. Its responsive cards expose status, priority, dates, tags, progress, and explicit edit/archive actions without relying on colour. The same controls collapse into a one-column mobile layout rather than a horizontally scrolling table.
 
 Search, status, priority, tag, sort direction, task ordering, and active/archive selection are represented in the project URL. Manual ordering is available only in the unfiltered manual view so move controls always describe the persisted order. Move buttons have meaningful accessible names and work with mouse, touch, and keyboard input.
 

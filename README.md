@@ -1,8 +1,14 @@
 # pr0gbarz 2.0
 
-pr0gbarz is being rebuilt as a focused, self-hosted project and progress tracker. The v2 application uses a React web interface, a Fastify API, and a fresh SQLite database.
+pr0gbarz is a focused, accessible, self-hosted project and progress tracker. Version 2.0 uses a React interface, Fastify API, and positively identified SQLite database while remaining one process, one port, and one data file.
 
-The current branch includes project/task workflows, progress analytics, and phase 8 portability and deployment support. Data can be exported as integrity-checked JSON, dry-run imported transactionally, reported as CSV, or copied with the verified SQLite backup command.
+It provides responsive project/task workflows, bookmarkable views, progress history and honest analytics, reversible archives, integrity-checked JSON portability, CSV reporting, verified backups, and bare-Node/container deployment.
+
+## Screenshots
+
+- [Desktop project workspace](apps/web/visual-tests/task-workspace.spec.ts-snapshots/task-workspace-desktop-linux.png)
+- [320px mobile project workspace](apps/web/visual-tests/task-workspace.spec.ts-snapshots/task-workspace-mobile-linux.png)
+- [Dark interface system](apps/web/visual-tests/shell.spec.ts-snapshots/components-dark-desktop-linux.png)
 
 ## Requirements
 
@@ -25,6 +31,7 @@ The web development server runs at `http://127.0.0.1:5173` and proxies `/api` re
 
 ```sh
 npm run build
+npm run release:check
 NODE_ENV=production npm start
 ```
 
@@ -64,7 +71,7 @@ npm run verify
 npm run test:visual --workspace @pr0gbarz/web
 ```
 
-`npm run verify` runs the fast local CI-equivalent sequence. The Playwright command separately checks the committed desktop/mobile and light/dark screenshots; install its browser once with `npx playwright install chromium`.
+`npm run verify` runs the local CI-equivalent sequence, including production artifact and bundle-budget checks. Playwright separately checks committed desktop/mobile and light/dark screenshots plus critical workflows in Chromium, Firefox, and WebKit; install them once with `npx playwright install chromium firefox webkit`.
 
 ## Workspace
 
@@ -77,7 +84,7 @@ packages/ui          Reusable UI primitives and design tokens
 tests/fixtures       Cross-package test fixtures
 ```
 
-See [Architecture](docs/architecture.md) for package boundaries, [Interface system](docs/interface.md) for frontend conventions, and [AGENTS.md](AGENTS.md) for the implementation roadmap.
+See [Architecture](docs/architecture.md) for package boundaries, [Interface system](docs/interface.md) for frontend conventions, [accessibility verification](docs/accessibility.md), [performance budgets](docs/performance.md), [security posture](docs/security.md), [release verification](docs/release.md), and [AGENTS.md](AGENTS.md) for the implementation contract.
 
 ## Database development
 
@@ -100,8 +107,6 @@ The reset command refuses to run in production and refuses any database that can
 ## Version 1 data
 
 Version 2 is a clean break. It will not open, modify, or automatically migrate a v1 database. Configure v2 with a new database path.
-
-The old source remains in the repository temporarily for historical reference, but it is disconnected from v2 scripts and will be removed in the release-hardening phase.
 
 ## License
 

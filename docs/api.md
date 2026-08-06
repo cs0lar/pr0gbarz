@@ -44,7 +44,7 @@ Project sorting is bounded to `manual`, `name`, or `updated`. Task sorting is bo
 
 List responses contain `items`, `offset`, `limit`, and `total`.
 
-Project responses include an unweighted mean of active task progress (or `null` when there are no active tasks) and a schedule-health state. Health is `insufficient_data` without progress and both dates, `not_started` before the start date, `overdue` after an unfinished target date, and `complete` at 100%. During the schedule, a project is `at_risk` when its completion trails linearly expected progress by more than ten percentage points; otherwise it is `on_track`. This intentionally simple phase 5 signal is not a completion-date projection.
+Project responses include an unweighted mean of active task progress (or `null` when there are no active tasks) and a schedule-health state. Health is `insufficient_data` without progress and both dates, `not_started` before the start date, `overdue` after an unfinished target date, and `complete` at 100%. During the schedule, a project is `at_risk` when its completion trails linearly expected progress by more than ten percentage points; otherwise it is `on_track`. This intentionally simple signal is not a completion-date projection.
 
 The dashboard returns active project/task totals, overdue and blocked task counts, overall measured completion, and up to five of the newest progress events from active work. Archived work is excluded.
 

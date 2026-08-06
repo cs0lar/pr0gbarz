@@ -88,10 +88,10 @@ Errors use one stable envelope and do not expose internal exception or database 
 - Fastify injection tests cover API behaviour without network sockets.
 - Repository integration tests use isolated temporary v2 databases.
 - Component tests cover meaningful interactive and automated accessibility states.
-- Playwright checks responsive light/dark screenshots and viewport overflow; critical end-to-end journeys will build on it as product workflows arrive.
+- Playwright checks responsive light/dark screenshots, viewport overflow, automated accessibility, and critical journeys in Chromium, Firefox, and WebKit.
 
 Tests must be deterministic and must not make external network calls.
 
 ## Legacy code
 
-The root-level v1 server, routes, templates, public assets, and SQL scripts are excluded from the v2 build and quality checks. They are retained temporarily to keep phase 1 focused and will be removed in roadmap phase 9. New code must not import from them.
+Version 2 has no v1 runtime path. The root-level server, legacy routes, Liquid templates, global browser assets, and `pgbz_` SQL chain were removed before the 2.0 release. The only remaining legacy awareness is the read-only database identity check that rejects v1 files without modifying them.

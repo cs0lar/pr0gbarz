@@ -6,7 +6,7 @@ pr0gbarz treats analytics as decision support, not certainty. All calculations u
 
 Project analytics reads the latest 1,000 progress events in the 28 UTC calendar days ending today. Daily points are the sum of `newProgress - previousProgress` for that date, so reversals remain visible rather than being silently discarded. Task history is separately bounded to the newest 100 events. The API returns no more than 28 daily samples and 20 stalled tasks.
 
-These limits are the phase 7 performance budget: runtime and response size depend on recent activity, not the lifetime size of the append-only history. If a project can exceed 1,000 updates in 28 days, the current response describes the bounded sample and should not be interpreted as a complete period aggregate. A future migration may add persisted daily rollups without changing the response contract.
+These limits keep runtime and response size dependent on recent activity, not the lifetime size of the append-only history. If a project can exceed 1,000 updates in 28 days, the current response describes the bounded sample and should not be interpreted as a complete period aggregate. A future migration may add persisted daily rollups without changing the response contract.
 
 ## Completion and velocity
 
