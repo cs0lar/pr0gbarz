@@ -60,6 +60,8 @@ async function refreshWorkspace(client: QueryClient, projectId: number) {
     client.invalidateQueries({ queryKey: taskKeys.lists }),
     client.invalidateQueries({ queryKey: projectKeys.detail(projectId) }),
     client.invalidateQueries({ queryKey: ['dashboard'] }),
+    client.invalidateQueries({ queryKey: ['analytics', 'project', projectId] }),
+    client.invalidateQueries({ queryKey: ['analytics', 'task'] }),
   ])
 }
 

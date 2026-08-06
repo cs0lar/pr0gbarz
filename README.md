@@ -45,7 +45,7 @@ The first startup creates the parent directory, v2 schema, identity marker, and 
 
 ## API
 
-The versioned product API is available under `/api/v1`. It provides projects, tasks, progress history, tags, and dashboard aggregates. Every request and response is checked against the shared TypeBox contracts.
+The versioned product API is available under `/api/v1`. It provides projects, tasks, progress history, conservative project analytics, tags, and dashboard aggregates. Every request and response is checked against the shared TypeBox contracts.
 
 Use `GET /health` for process liveness and `GET /ready` for database readiness. See the [API reference](docs/api.md) for endpoints, query options, lifecycle rules, and error responses.
 

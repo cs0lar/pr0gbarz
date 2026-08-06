@@ -5,6 +5,7 @@ import type {
   DashboardResponse,
   ProgressEventListQuery,
   ProgressEventListResponse,
+  ProjectAnalyticsResponse,
   ProjectListQuery,
   ProjectListResponse,
   ProjectResponse,
@@ -26,6 +27,7 @@ import type {
 } from '@pr0gbarz/database'
 
 import { conflict, invalidState, notFound } from '../errors.js'
+import { analyticsWindowDays, calculateProjectAnalytics } from './analytics.js'
 
 export interface WorkspaceServiceOptions {
   now?: (() => Date) | undefined
@@ -259,6 +261,39 @@ export class WorkspaceService {
         occurredAt: event.occurredAt.toISOString(),
       })),
     }
+  }
+
+  projectAnalytics(projectId: number): ProjectAnalyticsResponse {
+    this.requireProject(projectId)
+    const now = this.#now()
+    const since = new Date(now)
+    since.setUTCDate(since.getUTCDate() - (analyticsWindowDays - 1))
+    since.setUTCHours(0, 0, 0, 0)
+    const tasks = this.#repository.listTasks({
+      archived: false,
+      direction: 'asc',
+      limit: 10_000,
+      offset: 0,
+      projectId,
+      sort: 'manual',
+    }).items
+    const events = this.#repository.listProjectProgressEvents(
+      projectId,
+      since,
+      1_000,
+    )
+    const lastProgress = new Map(
+      this.#repository
+        .listTaskLastProgress(projectId)
+        .map((item) => [item.taskId, item.lastProgressAt]),
+    )
+    return calculateProjectAnalytics({
+      events,
+      lastProgress,
+      now,
+      projectId,
+      tasks,
+    })
   }
 
   getProject(id: number): ProjectResponse {
