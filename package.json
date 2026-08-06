@@ -1,6 +1,6 @@
 {
   "name": "pr0gbarz",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0",
   "description": "A focused, self-hosted project and progress tracker",
   "private": true,
   "type": "module",
@@ -23,11 +23,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings 0",
+    "release:check": "node scripts/check-release.mjs",
     "start": "npm run start --workspace @pr0gbarz/api",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run release:check"
   },
   "repository": {
     "type": "git",

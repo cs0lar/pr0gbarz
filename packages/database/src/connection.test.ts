@@ -150,7 +150,7 @@ describe('openDatabase', () => {
 
     const project = repositories.projects.create({ name: 'Launch' })
     const task = repositories.tasks.create({
-      name: 'Ship phase 2',
+      name: 'Ship release',
       projectId: project.id,
     })
     const tag = repositories.tags.create({

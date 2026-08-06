@@ -1,0 +1,17 @@
+{
+  "name": "pr0gbarz",
+  "short_name": "pr0gbarz",
+  "description": "A focused, self-hosted project and progress tracker.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f6f2",
+  "theme_color": "#5138d7",
+  "icons": [
+    {
+      "src": "/pr0gbarz-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

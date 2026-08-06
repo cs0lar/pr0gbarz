@@ -4,10 +4,6 @@ import { Link } from 'react-router-dom'
 
 import { useToast } from './components/toast-context.js'
 
-export { DashboardPage } from './features/dashboard/DashboardPage.js'
-export { ProjectDetailPage } from './features/projects/ProjectDetailPage.js'
-export { ProjectsPage } from './features/projects/ProjectsPage.js'
-
 export function ComponentsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const notify = useToast()

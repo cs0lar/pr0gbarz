@@ -1,5 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Component, type ErrorInfo, type ReactNode, useState } from 'react'
+import {
+  Component,
+  type ErrorInfo,
+  lazy,
+  type ReactNode,
+  Suspense,
+  useState,
+} from 'react'
 import {
   createBrowserRouter,
   isRouteErrorResponse,
@@ -10,13 +17,39 @@ import {
 import { AppShell } from './components/AppShell.js'
 import { ToastProvider } from './components/ToastProvider.js'
 import { ThemeProvider } from './components/ThemeProvider.js'
-import {
-  ComponentsPage,
-  DashboardPage,
-  NotFoundPage,
-  ProjectDetailPage,
-  ProjectsPage,
-} from './pages.js'
+import { ComponentsPage, NotFoundPage } from './pages.js'
+
+const DashboardPage = lazy(() =>
+  import('./features/dashboard/DashboardPage.js').then((module) => ({
+    default: module.DashboardPage,
+  })),
+)
+const ProjectDetailPage = lazy(() =>
+  import('./features/projects/ProjectDetailPage.js').then((module) => ({
+    default: module.ProjectDetailPage,
+  })),
+)
+const ProjectsPage = lazy(() =>
+  import('./features/projects/ProjectsPage.js').then((module) => ({
+    default: module.ProjectsPage,
+  })),
+)
+
+function RouteLoading() {
+  return (
+    <main className="fatal-error" aria-busy="true" aria-live="polite">
+      <div className="wordmark" aria-label="pr0gbarz">
+        <span className="wordmark__bars" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+        pr0gbarz
+      </div>
+      <p>Loading workspace…</p>
+    </main>
+  )
+}
 
 function RouteError() {
   const error = useRouteError()
@@ -113,7 +146,9 @@ export function App() {
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <ToastProvider>
-            <RouterProvider router={router} />
+            <Suspense fallback={<RouteLoading />}>
+              <RouterProvider router={router} />
+            </Suspense>
           </ToastProvider>
         </QueryClientProvider>
       </ThemeProvider>

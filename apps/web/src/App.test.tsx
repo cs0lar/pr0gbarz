@@ -55,7 +55,7 @@ describe('application shell', () => {
     render(<App />)
 
     expect(
-      screen.getByRole('heading', { name: 'Good morning.' }),
+      await screen.findByRole('heading', { name: 'Good morning.' }),
     ).toBeInTheDocument()
 
     const projectsLink = screen.getAllByRole('link', { name: 'Projects' }).at(0)
@@ -63,7 +63,7 @@ describe('application shell', () => {
     if (projectsLink) await user.click(projectsLink)
 
     expect(
-      screen.getByRole('heading', { name: 'Projects' }),
+      await screen.findByRole('heading', { name: 'Projects' }),
     ).toBeInTheDocument()
     expect(window.location.pathname).toBe('/projects')
   })
@@ -72,7 +72,7 @@ describe('application shell', () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: 'dark' }))
+    await user.click(await screen.findByRole('button', { name: 'dark' }))
 
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
@@ -82,6 +82,7 @@ describe('application shell', () => {
 
   it('has no detectable automated accessibility violations', async () => {
     render(<App />)
+    await screen.findByRole('heading', { name: 'Good morning.' })
     const result = await axe.run(document.body, {
       rules: { 'color-contrast': { enabled: false } },
     })
