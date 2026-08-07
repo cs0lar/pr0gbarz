@@ -1,6 +1,6 @@
 import type { ProjectResponse } from '@pr0gbarz/contracts'
 import { Badge, Button, Card, Progress } from '@pr0gbarz/ui'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import type { CSSProperties } from 'react'
 
 import { healthLabels, healthTone } from './schedule-health.js'

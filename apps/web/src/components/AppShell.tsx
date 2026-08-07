@@ -1,6 +1,6 @@
 import { Button, IconButton } from '@pr0gbarz/ui'
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router'
 
 import { Icon, type IconName } from './icons.js'
 import { useTheme } from './theme-context.js'
