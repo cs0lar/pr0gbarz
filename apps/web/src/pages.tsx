@@ -1,6 +1,6 @@
 import { Badge, Button, Card, Dialog, Progress, Skeleton } from '@pr0gbarz/ui'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 import { useToast } from './components/toast-context.js'
 

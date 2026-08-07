@@ -10,7 +10,7 @@ import {
 } from '@pr0gbarz/ui'
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router'
 
 import { ApiError } from '../../api/client.js'
 import { useToast } from '../../components/toast-context.js'

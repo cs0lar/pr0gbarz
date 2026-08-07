@@ -1,7 +1,7 @@
 import type { ProjectResponse } from '@pr0gbarz/contracts'
 import { Button, Card, Dialog, EmptyState, Skeleton } from '@pr0gbarz/ui'
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 
 import { ApiError } from '../../api/client.js'
 import { Icon } from '../../components/icons.js'

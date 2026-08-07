@@ -12,7 +12,7 @@ import {
   isRouteErrorResponse,
   RouterProvider,
   useRouteError,
-} from 'react-router-dom'
+} from 'react-router'
 
 import { AppShell } from './components/AppShell.js'
 import { ToastProvider } from './components/ToastProvider.js'

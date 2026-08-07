@@ -7,7 +7,7 @@ import {
   Skeleton,
 } from '@pr0gbarz/ui'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router'
 
 import { api } from '../../api/client.js'
 import { Icon } from '../../components/icons.js'

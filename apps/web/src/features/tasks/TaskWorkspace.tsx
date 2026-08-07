@@ -6,7 +6,7 @@ import type {
 } from '@pr0gbarz/contracts'
 import { Button, Card, Dialog, EmptyState, Skeleton } from '@pr0gbarz/ui'
 import { useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router'
 
 import { useToast } from '../../components/toast-context.js'
 import { TaskHistoryDialog } from '../analytics/TaskHistoryDialog.js'

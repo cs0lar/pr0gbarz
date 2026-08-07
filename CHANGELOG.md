@@ -2,6 +2,12 @@
 
 All notable changes to pr0gbarz are documented here. This project follows semantic versioning.
 
+## Unreleased
+
+### Security
+
+- Upgraded from `react-router-dom` 7.18.2 to the consolidated `react-router` 8.3.0 package, resolving `GHSA-qwww-vcr4-c8h2`.
+
 ## 2.0.0 — 2026-08-06
 
 Version 2.0 is a clean rebuild with a new, positively identified SQLite schema. It does not open or migrate v1 databases.
