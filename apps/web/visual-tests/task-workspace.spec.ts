@@ -182,7 +182,9 @@ test('manages tasks across desktop and mobile layouts', async ({ page }) => {
   })
 
   await page.goto('/projects/1')
-  await expect(page.getByRole('heading', { name: 'Tasks' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Tasks', exact: true }),
+  ).toBeVisible()
   await expect(page.locator('body')).toHaveScreenshot('task-workspace.png', {
     animations: 'disabled',
   })
@@ -191,6 +193,39 @@ test('manages tasks across desktop and mobile layouts', async ({ page }) => {
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true)
+
+  const taskCard = page
+    .getByRole('heading', { name: 'Test the task workspace' })
+    .locator('xpath=ancestor::article')
+  const description = taskCard.locator('.task-card__description')
+  await description.evaluate((element) => {
+    element.textContent =
+      'Verify every critical interaction and document https://example.test/releases/pr0gbarz/this-is-an-intentionally-long-unbroken-path-that-must-not-overlap-card-controls'
+  })
+  const descriptionLayout = await description.evaluate((element) => {
+    const descriptionBounds = element.getBoundingClientRect()
+    const cardBounds = element.closest('article')?.getBoundingClientRect()
+    const badgeBounds = element
+      .closest('.task-card__heading')
+      ?.querySelector('.ui-badge')
+      ?.getBoundingClientRect()
+    return {
+      cardRight: cardBounds?.right ?? 0,
+      clientWidth: element.clientWidth,
+      descriptionRight: descriptionBounds.right,
+      badgeLeft: badgeBounds?.left ?? 0,
+      scrollWidth: element.scrollWidth,
+    }
+  })
+  expect(descriptionLayout.scrollWidth).toBeGreaterThan(
+    descriptionLayout.clientWidth,
+  )
+  expect(descriptionLayout.descriptionRight).toBeLessThanOrEqual(
+    descriptionLayout.badgeLeft,
+  )
+  expect(descriptionLayout.descriptionRight).toBeLessThanOrEqual(
+    descriptionLayout.cardRight,
+  )
 
   const history = page.getByRole('button', { name: 'History' })
   await history.evaluate((element) => {

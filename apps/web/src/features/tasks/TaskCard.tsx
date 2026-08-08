@@ -45,7 +45,9 @@ export function TaskCard({
         <div className="task-card__heading">
           <div>
             <h3>{task.name}</h3>
-            {task.description ? <p>{task.description}</p> : null}
+            {task.description ? (
+              <p className="task-card__description">{task.description}</p>
+            ) : null}
           </div>
           <Badge tone={statusTone(task.status)}>
             {statusLabels[task.status]}

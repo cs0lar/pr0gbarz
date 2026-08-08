@@ -1286,6 +1286,13 @@
     justify-content: space-between;
     gap: var(--space-3);
   }
+  .task-card__main,
+  .task-card__heading > div {
+    min-width: 0;
+  }
+  .task-card__heading > .ui-badge {
+    flex-shrink: 0;
+  }
   .task-card h3,
   .task-card p {
     margin: 0;
@@ -1293,7 +1300,7 @@
   .task-card h3 {
     font-size: 1rem;
   }
-  .task-card p {
+  .task-card__description {
     margin-top: var(--space-1);
     overflow: hidden;
     color: var(--color-ink-muted);
