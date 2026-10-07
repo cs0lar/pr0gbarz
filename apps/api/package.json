@@ -19,7 +19,7 @@
     "@pr0gbarz/contracts": "^2.0.0",
     "@pr0gbarz/database": "^2.0.0",
     "dotenv": "^17.4.2",
-    "fastify": "^5.12.1"
+    "fastify": "^5.12.5"
   },
   "devDependencies": {
     "tsx": "^4.23.5"
